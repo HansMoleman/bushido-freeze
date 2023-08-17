@@ -1,6 +1,6 @@
 # Plan for Iteration One of Bushido Freeze Project
 **Created:**&nbsp;&nbsp; June 30<sup>th</sup>, 2023  
-**Updated:**&nbsp; 07-02-23 @ 3:10 AM
+**Updated:**&nbsp; 08-16-2023 @ 6:55 PM
 ---
 
 &nbsp;
@@ -31,6 +31,7 @@ The following is an outline of the objectives intended to be accomplished during
 	* Add detailed usecase descriptions for selected usecases of focus
 
 3. Begin implementing this iteration's usecases of focus
+	* Implement each of the usecases of focus in code at a minimal level; each usecase need only the minimum requirements of functionality to be a proof of concept
 
 4. Complete the plan for next iteration in the below section
 
