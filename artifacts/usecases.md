@@ -1,6 +1,6 @@
 # Use Case Document for Bushido Freeze Project
 **Created:**&nbsp;&nbsp; June 30<sup>th</sup>, 2023  
-**updated:**&nbsp; 08-16-2023 @ 6:13 PM
+**updated:**&nbsp; 08-16-2023 @ 7:13 PM
 ---
 
 &nbsp;
@@ -56,3 +56,46 @@ The user runs the system with argument denoting a token's value should be access
 ## 3 &nbsp;&nbsp; Detailed Use Case Descriptions
 
 The following are detailed descriptions of all identified system use cases:
+
+#### Add New Token for Storage
+
+| Primary User | User's Goals |
+|--------------|--------------|
+| Default      | Store token. |
+|||
+
+##### Pre-Conditions
+
+##### Post-Conditions
+
+##### Main Success Scenario
+
+##### Alternative Flows
+
+##### Exceptions
+
+##### Special Requirements
+
+##### Open Issues
+
+
+#### Access (Target) Token's Value
+
+| Primary User | User's Goals |
+|--------------|--------------|
+| Default      | View token.  |
+|||
+
+##### Pre-Conditions
+
+##### Post-Conditions
+
+##### Main Success Scenario
+
+##### Alternative Flows
+
+##### Exceptions
+
+##### Special Requirements
+
+##### Open Issues
