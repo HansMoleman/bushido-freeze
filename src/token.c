@@ -16,20 +16,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "token.h"
 
 
 const char VAL_PATH[] = "valudata.bin";
 //const char MET_PATH = "metadata.bin";
-
-
-
-typedef struct Token {
-    char title[64];
-    char descr[256];
-    char value[41];
-    char expiry[11];
-} Token;
-
 
 
 /**
@@ -40,6 +31,7 @@ Token* loadToken(){
     FILE* fptr_val = fopen(VAL_PATH, "rb");
 
     if(fptr_val == NULL){
+        printf("<< NULL TOKEN >>\n");
         Token* null_token = (Token*) NULL;
         return null_token;
     }
@@ -85,21 +77,4 @@ void printToken(Token* a_token){
     printf("Descr:   %s\n", a_token->descr);
     printf("Value:   %s\n", a_token->value);
     printf("Expires: %s\n", a_token->expiry);
-}
-
-
-
-int main(int argc, char* argv[]){
-    //Token* test_token = newToken("", "", "ghp_this4is?a8sample_authorization!token", "");
-
-    // save
-    //saveToken(test_token);
-    //printf("Test token registered.\n");
-
-    // load
-    Token* test_token;
-    test_token = loadToken();
-    printf("%s\n", test_token->value);
-
-    return 0;
 }
