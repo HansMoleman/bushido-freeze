@@ -28,9 +28,9 @@ typedef struct RandManager{
 	int  buff_size;
 	int  digit_size;
 	int  targ_size;
-	int  buffer[(targ_size * digit_size)];
+	int* buffer;
 	int  num_digits_available;
-}
+} RandManager;
 
 
 void initRandManager(RandManager* destination);
@@ -41,6 +41,7 @@ void getHexValue(RandManager* randmanager, char destination[], int ndigits);
 
 int main(){
 
+	/*
 	int buflen = 256;
 	int trglen = 64;
 	int buffer[buflen];
@@ -72,18 +73,27 @@ int main(){
 
 	decimalToHex(hexv, decv, 4);
 	printf("%s\n", hexv);
+	*/
+
+	RandManager* randman = (RandManager*) malloc(sizeof(RandManager*));
+	initRandManager(randman);
+
+	for(int i = 0; i < (randman->digit_size * randman->targ_size); i++){
+		printf("%d:  %u\n", i, randman->buffer[i]);
+	}
 
 	return 0;
 }
 
 
 void initRandManager(RandManager* destination){
-	destination->buff_size = 257;
+	destination->buff_size = 256;
 	destination->digit_size = 11;
 	destination->targ_size = 64;
+	destination->buffer = (int*) malloc((destination->targ_size * destination->digit_size * sizeof(int)) + 1);
 	destination->num_digits_available = 0;
 
-	for(int i = 0; i < destination->buff_size; i++){
+	for(int i = 0; i < (destination->digit_size * destination->targ_size); i++){
 		destination->buffer[i] = 0;
 	}
 }
