@@ -19,9 +19,9 @@
 #include <string.h>
 #include <sys/random.h>
 #include <unistd.h>
+#include "utilities.h"
 
 
-void decimalToHex(char destination[], int decimal_val);
 
 
 int main(){
@@ -115,12 +115,14 @@ int main(){
 	printf("dstr: %s -- dint: %d\n", dstr, decv);
 	printf("<E>\n");
 	
-	decimalToHex(hexv, decv);
+	decimalToHex(hexv, decv, 2);
 
+	/*
 	if(strlen(hexv) == 1){
 		hexv[1] = hexv[0];
 		hexv[0] = '0';
 	}
+	*/
 
 	printf("hex: %s\n", hexv);
 
@@ -128,6 +130,7 @@ int main(){
 }
 
 
+/*
 void decimalToHex(char destination[], int decimal_val){
 	int  quo;
 	int  rem;
@@ -195,4 +198,5 @@ void decimalToHex(char destination[], int decimal_val){
 	printf("hexv:  %s\n\n", hexv);
 	strcpy(destination, hexv);
 }
+*/
 
