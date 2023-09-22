@@ -75,12 +75,20 @@ int main(){
 	printf("%s\n", hexv);
 	*/
 
-	RandManager* randman = (RandManager*) malloc(sizeof(RandManager*));
+	RandManager* randman = (RandManager*) malloc(sizeof(RandManager));
 	initRandManager(randman);
 
 	for(int i = 0; i < (randman->digit_size * randman->targ_size); i++){
 		printf("%d:  %u\n", i, randman->buffer[i]);
 	}
+
+	printf("random values:\n");
+	fillBuffer(randman);
+
+	for(int i = 0; i < (randman->digit_size * randman->targ_size); i++){
+		printf("%d:  %u\n", i, randman->buffer[i]);
+	}
+	printf("num rand digits:  %d\n", randman->num_digits_available);
 
 	return 0;
 }
@@ -100,7 +108,27 @@ void initRandManager(RandManager* destination){
 
 
 void fillBuffer(RandManager* randmanager){
-	// fill randmanager's buffer with crypto-safe random data
+	char* raw_string = (char*) malloc((randmanager->targ_size * randmanager->digit_size * sizeof(char *)));
+	int* raw_buffer = (int *) malloc(randmanager->buff_size);
+	
+	getentropy(raw_buffer, randmanager->buff_size);
+
+	for(int i = 0; i < randmanager->targ_size; i++){
+		char converted[randmanager->digit_size];
+		strcpy(converted, "");
+		sprintf(converted, "%u", raw_buffer[i]);
+		strcat(raw_string, converted);
+	}
+
+	for(int i = 0; i < strlen(raw_string); i++){
+		char digit[2] = "";
+		sprintf(digit, "%c", raw_string[i]);
+		randmanager->buffer[i] = atoi(digit);
+		randmanager->num_digits_available++;
+	}
+
+	free(raw_string);
+	free(raw_buffer);
 }
 
 
