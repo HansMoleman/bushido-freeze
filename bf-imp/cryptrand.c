@@ -23,6 +23,22 @@
 
 
 
+
+typedef struct RandManager{
+	int  buff_size;
+	int  digit_size;
+	int  targ_size;
+	int  buffer[(targ_size * digit_size)];
+	int  num_digits_available;
+}
+
+
+void initRandManager(RandManager* destination);
+void fillBuffer(RandManager* randmanager);
+void getHexValue(RandManager* randmanager, char destination[], int ndigits);
+
+
+
 int main(){
 
 	int buflen = 256;
@@ -58,5 +74,27 @@ int main(){
 	printf("%s\n", hexv);
 
 	return 0;
+}
+
+
+void initRandManager(RandManager* destination){
+	destination->buff_size = 257;
+	destination->digit_size = 11;
+	destination->targ_size = 64;
+	destination->num_digits_available = 0;
+
+	for(int i = 0; i < destination->buff_size; i++){
+		destination->buffer[i] = 0;
+	}
+}
+
+
+void fillBuffer(RandManager* randmanager){
+	// fill randmanager's buffer with crypto-safe random data
+}
+
+
+void getHexValue(RandManager* randmanager, char destination[], int ndigits){
+	// take ndigits digits from buffer, convert it to hex, and place in destination
 }
 
