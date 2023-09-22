@@ -78,15 +78,15 @@ int main(){
 	RandManager* randman = (RandManager*) malloc(sizeof(RandManager));
 	initRandManager(randman);
 
-	for(int i = 0; i < (randman->digit_size * randman->targ_size); i++){
-		printf("%d:  %u\n", i, randman->buffer[i]);
-	}
-
 	printf("random values:\n");
 	fillBuffer(randman);
 
 	for(int i = 0; i < (randman->digit_size * randman->targ_size); i++){
-		printf("%d:  %u\n", i, randman->buffer[i]);
+		printf("%u", randman->buffer[i]);
+
+		if(i == (randman->digit_size * randman->targ_size) - 1){
+			printf("\n");
+		}
 	}
 	printf("num rand digits:  %d\n", randman->num_digits_available);
 
