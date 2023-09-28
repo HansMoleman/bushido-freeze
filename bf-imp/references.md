@@ -1,6 +1,6 @@
 # Reference Sources for Blowfish Implementation
 **Created:**&nbsp;&nbsp; September 22<sup>nd</sup>, 2023  
-**Updated:**&nbsp; 09-22-2023 @ 12:33 PM
+**Updated:**&nbsp; 09-28-2023 @ 1:53 PM
 ---
 
 
@@ -19,4 +19,11 @@
 * ["casting int to char using C style casting duplicate" - Edureka](https://www.edureka.co/community/182745/casting-int-to-char-using-c-style-casting-duplicate#:~:text=In%20traditional%20C%20you%20can,the%20same%20value%20as%20i).)
 
 
-### (Next ...)
+### September 28<sup>th</sup>, 2023
+
+* ["How to use the typedef struct in C" - Educative](https://www.educative.io/answers/how-to-use-the-typedef-struct-in-c)
+* ["C library function - malloc()" - TutorialsPoint](https://www.tutorialspoint.com/c_standard_library/c_function_malloc.htm)
+* ["Passing an array by reference in C?" (Answer) - StackOverflow](https://stackoverflow.com/a/1106977)
+* ["How do I convert a char to an int in C and C++" - TutorialsPoint](https://www.tutorialspoint.com/how-do-i-convert-a-char-to-an-int-in-c-and-cplusplus)
+
+
