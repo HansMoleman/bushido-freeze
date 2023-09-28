@@ -92,9 +92,23 @@ int main(){
 	printf("num rand digits:  %d\n", randman->num_digits_available);
 
 	printf("hex value:\n");
-	char* hexv = malloc(9 * sizeof(char));
-	getHexValue(randman, hexv, 8);
-	printf("%s\n", hexv);
+	int hexsize = 64;
+	char* hexv = malloc((hexsize + 1) * sizeof(char));
+	getHexValue(randman, hexv, hexsize);
+
+	printf("Hex Value:\n");
+	int poffset = 0;
+	for(int i = 0; i < strlen(hexv); i++){
+		if((poffset == 3) && (i != (strlen(hexv) - 1))){
+			printf("%c-", hexv[i]);
+			poffset = 0;
+		}
+		else{
+			printf("%c", hexv[i]);
+			poffset++;
+		}
+	}
+	printf("\n");
 
 	return 0;
 }
@@ -145,9 +159,9 @@ void getHexValue(RandManager* randmanager, char destination[], int ndigits){
 	int   fetch_count;
 	int   decimal_value;
 
-	digits_fetched = (int*) malloc(((ndigits * 2) + 1) * sizeof(int));
+	digits_fetched = (int*) malloc((ndigits + 1) * sizeof(int));
 	fetch_count = 0;
-	for(int i = 0; i < (ndigits * 2); i++){
+	for(int i = 0; i < (ndigits + 1); i++){
 		int i_targ = randmanager->offset + i;
 		digits_fetched[i] = randmanager->buffer[i_targ];
 		fetch_count++;
@@ -156,7 +170,7 @@ void getHexValue(RandManager* randmanager, char destination[], int ndigits){
 	randmanager->offset += fetch_count;
 	printf("fetch-count:  %d\n", fetch_count);
 	printf("digits:  ");
-	for(int i = 0; i < (ndigits * 2); i++){
+	for(int i = 0; i < (ndigits + 1); i++){
 		printf("%u", digits_fetched[i]);
 	}
 	printf("\n");
@@ -171,9 +185,43 @@ void getHexValue(RandManager* randmanager, char destination[], int ndigits){
 	}
 	printf("temp_decv:  %s\n", temp_decv);
 
-	decimal_value = atoi(temp_decv);
-	printf("decv:  %u\n", decimal_value);
-	decimalToHex(destination, decimal_value, ndigits);
+	if(strlen(temp_decv) > 9){
+		int offset = 0;
+		int schunks = 9;
+		int nchunks = (strlen(temp_decv) / schunks) + 1;
+
+		char* hexchunks = (char*) malloc(((schunks * nchunks) + 1) * sizeof(char));
+		strcpy(hexchunks, "");
+		for(int i = 0; i < nchunks; i++){
+
+			char* chunk = (char*) malloc((schunks + 1) * sizeof(char));
+			strcpy(chunk, "");
+			for(int j = offset; j < (offset + schunks); j++){
+				char digit[2];
+				strcpy(digit, "");
+				sprintf(digit, "%c", temp_decv[j]);
+				strcat(chunk, digit);
+			}
+			offset += schunks;
+
+			int chunk_decv = atoi(chunk);
+			char* hexbuff = (char*) malloc((schunks + 1) * sizeof(char));
+			strcpy(hexbuff, "");
+			printf("chunk %d:  %u  <->  %s\n", i, chunk_decv, chunk);
+			decimalToHex(hexbuff, chunk_decv, (schunks - 1));
+			printf("hexbuffer:  %s\n", hexbuff);
+			strcat(hexchunks, hexbuff);
+
+			free(chunk);
+			free(hexbuff);
+		}
+		strcpy(destination, hexchunks);
+	}
+	else{
+		decimal_value = atoi(temp_decv);
+		printf("decv:  %u\n", decimal_value);
+		decimalToHex(destination, decimal_value, ndigits);
+	}
 
 	free(digits_fetched);
 	free(temp_decv);
