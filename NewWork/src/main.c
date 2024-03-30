@@ -26,7 +26,6 @@
 
 void   charToBinary(char* destination, char a_char);
 char   binaryToChar(char* binary_rep);
-
 void   initLocal();
 
 char** doLocalEncrypt();
@@ -111,7 +110,6 @@ char  binaryToChar(char* binary_rep){
 
 
 void initLocal(){
-	//char filepath[] = "local-cache.bin";
 	char chb[9] = "";
 	int min_ascii = 33;
 	int max_ascii = 126;
@@ -128,7 +126,7 @@ void initLocal(){
 			rand_ascii[i] = randv;
 		}
 
-		printf("\n");
+		//printf("\n");
 		int  rsize = sizeof(rand_ascii) / sizeof(rand_ascii[0]);
 		char key[33] = "";
 		char bin[((32 * 8) + 1)] = "";
@@ -139,7 +137,7 @@ void initLocal(){
 			//printf("%c\n", chr);
 			charToBinary(chb, chr);
 			//printf("%s\n", chb);
-			printf("%i -> %c -> %s\n", rand_ascii[j], chr, chb);
+			//printf("%i -> %c -> %s\n", rand_ascii[j], chr, chb);
 			char chr_str[2] = "";
 			sprintf(chr_str, "%c", chr);
 			strcat(key, chr_str);
@@ -149,9 +147,13 @@ void initLocal(){
 		printf("key: %s\n", key);
 		printf("bin: %s\n", bin);
 
+		// create p-boxes and s-boxes with key
+
+		/*
 		FILE* fptr = fopen(LOCALCACHE, "w");
 		fprintf(fptr, "%s\n", bin);
 		fclose(fptr);
+		*/
 	}
 	else {
 		printf("local cache already exists.\n");
