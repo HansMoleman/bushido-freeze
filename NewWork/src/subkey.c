@@ -40,9 +40,9 @@ int main(int argc, char* argv[]){
 	//char encrdata[65] = "";
 	//blowfishForwards(encrdata, pbox, sboxes, testdata);
 
-	char test_l[] = "00111110";
-	char test_r[] = "00100110";
-	char test_xor[9] = "";
+	char test_l[] = "00111110001001100110010101111000";
+	char test_r[] = "01101001010110010111000000111011";
+	char test_xor[33] = "";
 	xor(test_xor, test_l, test_r);
 	printf("%s\n", test_xor);
 
@@ -251,7 +251,7 @@ void updateLocalCache(char* sboxes, char* pboxes){
 
 void xor(char* xl_new, char* xl, char* pbox_i){
 	int xlen = strlen(xl);
-	char xorv[9] = "";
+	char xorv[33] = "";
 
 	for(int i = 0; i < xlen; i++){
 		if(xl[i] == pbox_i[i]){
