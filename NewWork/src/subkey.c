@@ -14,11 +14,14 @@
 #define LOCALCACHE "local-cache.bin"
 
 
+int  binaryToInt(char* binary_rep);
+void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void loadPBoxBin(char* destination);
 void loadSBoxBin(char* destination);
 void makeSBoxes(char* destination, char* key);
 void makePBoxes(char* destination, char* key);
 void updateLocalCache(char* sboxes, char* pboxes);
+void xor(char* xl_new, char* xl, char* pbox_i);
 
 
 
@@ -30,12 +33,136 @@ int main(int argc, char* argv[]){
 
 	//loadPBoxBin(pbox);
 	//printf("%s\n", pbox);
-	loadSBoxBin(sboxes);
-	printf("%s\n", sboxes);
+	//loadSBoxBin(sboxes);
+	//printf("%s\n", sboxes);
+
+	//char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
+	//char encrdata[65] = "";
+	//blowfishForwards(encrdata, pbox, sboxes, testdata);
+
+	char test_l[] = "00111110";
+	char test_r[] = "00100110";
+	char test_xor[9] = "";
+	xor(test_xor, test_l, test_r);
+	printf("%s\n", test_xor);
 
 	return 0;
 }
 
+
+/*
+void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
+	char xl[33] = "";
+	char xr[33] = "";
+
+	for(int i = 0; i < strlen(xdata); i++){
+		if(i < 32){
+			char chr[2] = "";
+			sprintf(chr, "%c", xdata[i]);
+			strcat(xl, chr);
+		}
+		else{
+			char chr[2] = "";
+			sprintf(chr, "%c", xdata[i]);
+			strcat(xr, chr);
+		}
+	}
+
+	//printf("xl: %s\n", xl);
+	//printf("xr: %s\n", xr);
+	for(i = 0; i < 16; i++){
+		char xl_new[33] = "";
+		char pbox_i[33] = "";
+
+		for(int j = (i * 32); j < ((i * 32) + 32); j++){
+			pbox_i[j] = pbox[j];
+		}
+		xor(xl_new, xl, pbox_i)
+
+		char abin[9] = "";
+		char bbin[9] = "";
+		char cbin[9] = "";
+		char dbin[9] = "";
+		for(j = 0; j < 32; j++){
+			if(0 <= j && j < 8){
+				// a
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(abin, digit);
+			}
+			else if(8 <= j && j < 16){
+				// b
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(bbin, digit);
+			}
+			else if(16 <= j && j < 24){
+				// c
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(cbin, digit);
+			}
+			else{
+				// d
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(dbin, digit);
+			}
+		}
+		int aind = binaryToInt(abin);
+		int bind = binaryToInt(bbin);
+		int cind = binaryToInt(cbin);
+		int dind = binaryToInt(dbin);
+		
+		char sbox1[33] = "";
+		char sbox2[33] = "";
+		char sbox3[33] = "";
+		char sbox4[33] = "";
+		for(j = ((0 * 255) + (32 * aind)); j < (j + 32); j++){
+			char digit[2] = "";
+			sprintf(digit, "%c", sboxes[j]);
+			strcat(sbox1, digit);
+		}
+
+		for(j = ((1 * 255) + (32 * aind)); j < (j + 32); j++){
+			char digit[2] = "";
+			sprintf(digit, "%c", sboxes[j]);
+			strcat(sbox2, digit);
+		}
+
+		for(j = ((2 * 255) + (32 * aind)); j < (j + 32); j++){
+			char digit[2] = "";
+			sprintf(digit, "%c", sboxes[j]);
+			strcat(sbox3, digit);
+		}
+
+		for(j = ((3 * 255) + (32 * aind)); j < (j + 32); j++){
+			char digit[2] = "";
+			sprintf(digit, "%c", sboxes[j]);
+			strcat(sbox4, digit);
+		}
+
+	}
+}
+*/
+
+
+int binaryToInt(char* binary_rep){
+	int power = 0;
+    int sum = 0;
+    for(int i = 7; 0 <= i; i--){
+        int base = binary_rep[i] - '0';
+        sum += (base * (1 << power));
+        power++;
+    }
+
+    return sum;
+}
+
+
+void blowfishFunction(char* destination, char* sbox1, char* sbox2, char* sbox3, char* sbox4, char* xl){
+	// yeet
+}
 
 
 void loadSBoxBin(char* destination){
@@ -119,4 +246,23 @@ void makePBoxes(char* destination, char* key){
 
 void updateLocalCache(char* sboxes, char* pboxes){
 	printf("yetet\n");
+}
+
+
+void xor(char* xl_new, char* xl, char* pbox_i){
+	int xlen = strlen(xl);
+	char xorv[9] = "";
+
+	for(int i = 0; i < xlen; i++){
+		if(xl[i] == pbox_i[i]){
+			char digit[2] = "0";
+			strcat(xorv, digit);
+		}
+		else{
+			char digit[2] = "1";
+			strcat(xorv, digit);
+		}
+	}
+
+	strcpy(xl_new, xorv);
 }
