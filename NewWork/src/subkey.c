@@ -14,6 +14,7 @@
 #define LOCALCACHE "local-cache.bin"
 
 
+void addModulo2(char* destination, char* addend_a, char* addend_b);
 int  binaryToInt(char* binary_rep);
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void getPBox(char* destination, int index, char* pbox);
@@ -38,9 +39,9 @@ int main(int argc, char* argv[]){
 	loadSBoxBin(sboxes);
 	//printf("%s\n", sboxes);
 
-	//char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
-	//char encrdata[65] = "";
-	//blowfishForwards(encrdata, pbox, sboxes, testdata);
+	char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
+	char encrdata[65] = "";
+	blowfishForwards(encrdata, pbox, sboxes, testdata);
 
 	//char test_l[] = "00111110001001100110010101111000";
 	//char test_r[] = "01101001010110010111000000111011";
@@ -69,6 +70,7 @@ int main(int argc, char* argv[]){
 	getSBox(sbox0_255, 0, 255, sboxes);
 	*/
 
+	/*
 	char sbox2_0[33] = "";
 	char sbox2_127[33] = "";
 	char sbox2_255[33] = "";
@@ -79,13 +81,46 @@ int main(int argc, char* argv[]){
 	printf("2,  %i: %s\n", 0, sbox2_0);
 	printf("2,  %i: %s\n", 127, sbox2_127);
 	printf("2, %i: %s\n", 255, sbox2_255);
+	*/
+
+	char addend_a[] = "01001000011111001010110001100000";
+	char addend_b[] = "11100110101110100000110110011001";
+	//                 10101111000001101011000111111001
+	char addmodul[33] = "";
+	addModulo2(addmodul, addend_a, addend_b);
+	printf("modulo 2^32: %s\n", addmodul);
 
 
 	return 0;
 }
 
 
-/*
+
+void addModulo2(char* destination, char* addend_a, char* addend_b){
+	char result[33] = "";
+	char carry[2] = "0";
+
+	for(int i = 31; 0 <= i; i--){
+		char digit[2];
+		if((addend_a[i] == '0' && addend_b[i] == '1' && (strcmp(carry, "0") || strcmp(carry, "1"))) || (addend_a[i] == '1' && addend_b[i] == '0' && (strcmp(carry, "0") || strcmp(carry, "1"))) || (addend_a[i] == '0' && addend_b[i] == '0' && strcmp(carry,"1"))){
+			sprintf(digit, "%c", '1');
+		}
+		else{
+			//digit = "0";
+			sprintf(digit, "%c", '0');
+			//carry = "1";
+			sprintf(carry, "%c", '1');
+		}
+
+		char digitc = digit[0];
+		result[i] = digitc;
+	}
+
+	strcpy(destination, result);
+
+}
+
+
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 	char xl[33] = "";
 	char xr[33] = "";
@@ -109,9 +144,7 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 		char xl_new[33] = "";
 		char pbox_i[33] = "";
 
-		for(int j = (i * 32); j < ((i * 32) + 32); j++){
-			pbox_i[j] = pbox[j];
-		}
+		getPBox(pbox_i, i, pbox);
 		xor(xl_new, xl, pbox_i);
 
 		char abin[9] = "";
@@ -149,39 +182,23 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 		int cind = binaryToInt(cbin);
 		int dind = binaryToInt(dbin);
 		
-		char sbox1[33] = "";
-		char sbox2[33] = "";
-		char sbox3[33] = "";
-		char sbox4[33] = "";
-		for(int j = ((0 * 255) + (32 * aind)); j < (j + 32); j++){
-			char digit[2] = "";
-			sprintf(digit, "%c", sboxes[j]);
-			strcat(sbox1, digit);
-		}
+		char sbox0a[33] = "";
+		char sbox1b[33] = "";
+		char sbox2c[33] = "";
+		char sbox3d[33] = "";
+		getSBox(sbox0a, 0, aind, sboxes);
+		getSBox(sbox1b, 1, bind, sboxes);
+		getSBox(sbox2c, 2, cind, sboxes);
+		getSBox(sbox3d, 3, dind, sboxes);
 
-		for(int j = ((1 * 255) + (32 * aind)); j < (j + 32); j++){
-			char digit[2] = "";
-			sprintf(digit, "%c", sboxes[j]);
-			strcat(sbox2, digit);
-		}
-
-		for(int j = ((2 * 255) + (32 * aind)); j < (j + 32); j++){
-			char digit[2] = "";
-			sprintf(digit, "%c", sboxes[j]);
-			strcat(sbox3, digit);
-		}
-
-		for(int j = ((3 * 255) + (32 * aind)); j < (j + 32); j++){
-			char digit[2] = "";
-			sprintf(digit, "%c", sboxes[j]);
-			strcat(sbox4, digit);
-		}
-
-		printf("(sbox1, %i): %s\n", aind, sbox1);
+		//printf("(0, %i):  %s\n", aind, sbox0a);
+		//printf("(1, %i):  %s\n", bind, sbox1b);
+		//printf("(2, %i):  %s\n", cind, sbox2c);
+		//printf("(3, %i):  %s\n", dind, sbox3d);
 
 	}
 }
-*/
+
 
 
 
@@ -198,7 +215,7 @@ int binaryToInt(char* binary_rep){
 }
 
 
-void blowfishFunction(char* destination, char* sbox1, char* sbox2, char* sbox3, char* sbox4, char* xl){
+void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d, char* xl){
 	// yeet
 }
 
