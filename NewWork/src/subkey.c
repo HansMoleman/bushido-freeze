@@ -16,6 +16,8 @@
 
 int  binaryToInt(char* binary_rep);
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
+void getPBox(char* destination, int index, char* pbox);
+void getSBox(char* destination, int box, int index, char* sbox);
 void loadPBoxBin(char* destination);
 void loadSBoxBin(char* destination);
 void makeSBoxes(char* destination, char* key);
@@ -31,20 +33,53 @@ int main(int argc, char* argv[]){
 	char sboxes[((32 * 256 * 4) + 1)] = "";
 	char pbox[((18 * 32) + 1)] = "";
 
-	//loadPBoxBin(pbox);
+	loadPBoxBin(pbox);
 	//printf("%s\n", pbox);
-	//loadSBoxBin(sboxes);
+	loadSBoxBin(sboxes);
 	//printf("%s\n", sboxes);
 
 	//char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
 	//char encrdata[65] = "";
 	//blowfishForwards(encrdata, pbox, sboxes, testdata);
 
-	char test_l[] = "00111110001001100110010101111000";
-	char test_r[] = "01101001010110010111000000111011";
-	char test_xor[33] = "";
-	xor(test_xor, test_l, test_r);
-	printf("%s\n", test_xor);
+	//char test_l[] = "00111110001001100110010101111000";
+	//char test_r[] = "01101001010110010111000000111011";
+	//char test_xor[33] = "";
+	//xor(test_xor, test_l, test_r);
+	//printf("%s\n", test_xor);
+
+	/*
+	char pbox_0[33] = "";
+	char pbox_8[33] = "";
+	char pbox_17[33] = "";
+	getPBox(pbox_0, 0, pbox);
+	getPBox(pbox_8, 8, pbox);
+	getPBox(pbox_17, 17, pbox);
+	printf("0: %s\n", pbox_0);
+	printf("8: %s\n", pbox_8);
+	printf("17: %s\n", pbox_17);
+	*/
+
+	/*
+	char sbox0_0[33] = "";
+	char sbox0_127[33] = "";
+	char sbox0_255[33] = "";
+	getSBox(sbox0_0, 0, 0, sboxes);
+	getSBox(sbox0_127, 0, 127, sboxes);
+	getSBox(sbox0_255, 0, 255, sboxes);
+	*/
+
+	char sbox2_0[33] = "";
+	char sbox2_127[33] = "";
+	char sbox2_255[33] = "";
+	getSBox(sbox2_0, 2, 0, sboxes);
+	getSBox(sbox2_127, 2, 127, sboxes);
+	getSBox(sbox2_255, 2, 255, sboxes);
+
+	printf("2,  %i: %s\n", 0, sbox2_0);
+	printf("2,  %i: %s\n", 127, sbox2_127);
+	printf("2, %i: %s\n", 255, sbox2_255);
+
 
 	return 0;
 }
@@ -70,20 +105,20 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 
 	//printf("xl: %s\n", xl);
 	//printf("xr: %s\n", xr);
-	for(i = 0; i < 16; i++){
+	for(int i = 0; i < 16; i++){
 		char xl_new[33] = "";
 		char pbox_i[33] = "";
 
 		for(int j = (i * 32); j < ((i * 32) + 32); j++){
 			pbox_i[j] = pbox[j];
 		}
-		xor(xl_new, xl, pbox_i)
+		xor(xl_new, xl, pbox_i);
 
 		char abin[9] = "";
 		char bbin[9] = "";
 		char cbin[9] = "";
 		char dbin[9] = "";
-		for(j = 0; j < 32; j++){
+		for(int j = 0; j < 32; j++){
 			if(0 <= j && j < 8){
 				// a
 				char digit[2] = "";
@@ -118,33 +153,36 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 		char sbox2[33] = "";
 		char sbox3[33] = "";
 		char sbox4[33] = "";
-		for(j = ((0 * 255) + (32 * aind)); j < (j + 32); j++){
+		for(int j = ((0 * 255) + (32 * aind)); j < (j + 32); j++){
 			char digit[2] = "";
 			sprintf(digit, "%c", sboxes[j]);
 			strcat(sbox1, digit);
 		}
 
-		for(j = ((1 * 255) + (32 * aind)); j < (j + 32); j++){
+		for(int j = ((1 * 255) + (32 * aind)); j < (j + 32); j++){
 			char digit[2] = "";
 			sprintf(digit, "%c", sboxes[j]);
 			strcat(sbox2, digit);
 		}
 
-		for(j = ((2 * 255) + (32 * aind)); j < (j + 32); j++){
+		for(int j = ((2 * 255) + (32 * aind)); j < (j + 32); j++){
 			char digit[2] = "";
 			sprintf(digit, "%c", sboxes[j]);
 			strcat(sbox3, digit);
 		}
 
-		for(j = ((3 * 255) + (32 * aind)); j < (j + 32); j++){
+		for(int j = ((3 * 255) + (32 * aind)); j < (j + 32); j++){
 			char digit[2] = "";
 			sprintf(digit, "%c", sboxes[j]);
 			strcat(sbox4, digit);
 		}
 
+		printf("(sbox1, %i): %s\n", aind, sbox1);
+
 	}
 }
 */
+
 
 
 int binaryToInt(char* binary_rep){
@@ -162,6 +200,37 @@ int binaryToInt(char* binary_rep){
 
 void blowfishFunction(char* destination, char* sbox1, char* sbox2, char* sbox3, char* sbox4, char* xl){
 	// yeet
+}
+
+
+void getPBox(char* destination, int index, char* pbox){
+	char pbox_i[33] = "";
+	int start = (index * 32);
+	int finish = (start + 32);
+
+	for(int i = start; i < finish; i++){
+		char digit[2] = "";
+		sprintf(digit, "%c", pbox[i]);
+		strcat(pbox_i, digit);
+	}
+
+	//printf("pbox-%i: %s\n", index, pbox_i);
+	strcpy(destination, pbox_i);
+}
+
+
+void getSBox(char* destination, int box, int index, char* sbox){
+	char sbox_i[33] = "";
+	int  start  = ((box * (32 * 256)) + (index * 32));
+	int  finish = (start + 32);
+
+	for(int i = start; i < finish; i++){
+		char digit[2] = "";
+		sprintf(digit, "%c", sbox[i]);
+		strcat(sbox_i, digit);
+	}
+
+	strcpy(destination, sbox_i);
 }
 
 
