@@ -43,6 +43,7 @@ int main(int argc, char* argv[]){
 	char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
 	char encrdata[65] = "";
 	blowfishForwards(encrdata, pbox, sboxes, testdata);
+	printf("%s\n", encrdata);
 
 	//char test_l[] = "00111110001001100110010101111000";
 	//char test_r[] = "01101001010110010111000000111011";
@@ -222,16 +223,55 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 		getSBox(sbox2c, 2, cind, sboxes);
 		getSBox(sbox3d, 3, dind, sboxes);
 
-		printf("(0, %i):  %s\n", aind, sbox0a);
-		printf("(1, %i):  %s\n", bind, sbox1b);
-		printf("(2, %i):  %s\n", cind, sbox2c);
-		printf("(3, %i):  %s\n", dind, sbox3d);
+		//printf("(0, %i):  %s\n", aind, sbox0a);
+		//printf("(1, %i):  %s\n", bind, sbox1b);
+		//printf("(2, %i):  %s\n", cind, sbox2c);
+		//printf("(3, %i):  %s\n", dind, sbox3d);
 
 		char f_xl[33] = "";
 		blowfishFunction(f_xl, sbox0a, sbox1b, sbox2c, sbox3d);
-		printf("%s\n", f_xl);
+		//printf("%s\n", f_xl);
+		char fxl_xor_xr[33] = "";
+		xor(fxl_xor_xr, f_xl, xr);
+		strcpy(xr, fxl_xor_xr);
 
+		// swap xl & xr
+		//printf("\nbefore\n");
+		//printf("xl: %s\n", xl);
+		//printf("xr: %s\n", xr);
+		char temp[33] = "";
+		strcpy(temp, xl);
+		strcpy(xl, xr);
+		strcpy(xr, temp);
+		//printf("after\n");
+		//printf("xl: %s\n", xl);
+		//printf("xr: %s\n", xr);
 	}
+
+	// undo last swap
+	char temp[33] = "";
+	strcpy(temp, xl);
+	strcpy(xl, xr);
+	strcpy(xr, temp);
+
+	char pbox_16[33] = "";
+	char pbox_17[33] = "";
+	getPBox(pbox_16, 16, pbox);
+	getPBox(pbox_17, 17, pbox);
+
+	char new_xr[33] = "";
+	char new_xl[33] = "";
+	xor(new_xr, xr, pbox_16);
+	xor(new_xl, xl, pbox_17);
+	strcpy(xr, new_xr);
+	strcpy(xl, new_xl);
+
+	// recombine xl & xr
+	char encx[65] = "";
+	strcat(encx, xl);
+	strcat(encx, xr);
+
+	strcpy(destination, encx);
 }
 
 
