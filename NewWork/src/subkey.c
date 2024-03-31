@@ -22,6 +22,7 @@ void getPBox(char* destination, int index, char* pbox);
 void getSBox(char* destination, int box, int index, char* sbox);
 void loadPBoxBin(char* destination);
 void loadSBoxBin(char* destination);
+void makeKeyChunks(char destination[14][33], char* key);
 void makeSBoxes(char* destination, char* key);
 void makePBoxes(char* destination, char* key);
 void updateLocalCache(char* sboxes, char* pboxes);
@@ -40,58 +41,19 @@ int main(int argc, char* argv[]){
 	loadSBoxBin(sboxes);
 	//printf("%s\n", sboxes);
 
-	char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
-	char encrdata[65] = "";
-	blowfishForwards(encrdata, pbox, sboxes, testdata);
-	printf("%s\n", encrdata);
+	//char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
+	//char encrdata[65] = "";
+	//blowfishForwards(encrdata, pbox, sboxes, testdata);
+	//printf("%s\n", encrdata);
 
-	//char test_l[] = "00111110001001100110010101111000";
-	//char test_r[] = "01101001010110010111000000111011";
-	//char test_xor[33] = "";
-	//xor(test_xor, test_l, test_r);
-	//printf("%s\n", test_xor);
+	//char pbox_key[449] = "";
+	char key_chunks[14][33];
+	//char** chunks = key_chunks;
+	makeKeyChunks(key_chunks, local_key);
 
-	/*
-	char pbox_0[33] = "";
-	char pbox_8[33] = "";
-	char pbox_17[33] = "";
-	getPBox(pbox_0, 0, pbox);
-	getPBox(pbox_8, 8, pbox);
-	getPBox(pbox_17, 17, pbox);
-	printf("0: %s\n", pbox_0);
-	printf("8: %s\n", pbox_8);
-	printf("17: %s\n", pbox_17);
-	*/
-
-	/*
-	char sbox0_0[33] = "";
-	char sbox0_127[33] = "";
-	char sbox0_255[33] = "";
-	getSBox(sbox0_0, 0, 0, sboxes);
-	getSBox(sbox0_127, 0, 127, sboxes);
-	getSBox(sbox0_255, 0, 255, sboxes);
-	*/
-
-	/*
-	char sbox2_0[33] = "";
-	char sbox2_127[33] = "";
-	char sbox2_255[33] = "";
-	getSBox(sbox2_0, 2, 0, sboxes);
-	getSBox(sbox2_127, 2, 127, sboxes);
-	getSBox(sbox2_255, 2, 255, sboxes);
-
-	printf("2,  %i: %s\n", 0, sbox2_0);
-	printf("2,  %i: %s\n", 127, sbox2_127);
-	printf("2, %i: %s\n", 255, sbox2_255);
-	*/
-
-	//char addend_a[] = "01001000011111001010110001100000";
-	//char addend_b[] = "11100110101110100000110110011001";
-	//                   00101111001101101011100111111001
-	//                 0100101111001101101011100111111001
-	//char addmodul[33] = "";
-	//addModulo2(addmodul, addend_a, addend_b);
-	//printf("modulo 2^32: %s\n", addmodul);
+	for(int i = 0; i < 14; i++){
+		printf("%i: %s\n", i, key_chunks[i]);
+	}
 
 
 	return 0;
@@ -275,8 +237,6 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 }
 
 
-
-
 int binaryToInt(char* binary_rep){
 	int power = 0;
     int sum = 0;
@@ -403,13 +363,45 @@ void loadPBoxBin(char* destination){
 }
 
 
+void makeKeyChunks(char destination[14][33], char* key){
+	char key_chunks[14][33];
+	int  key_length = strlen(key);
+	int  digit_counter = 0;
+	int  chunk_counter = 0;
+
+	for(int i = 0; i < 14; i++){
+		strcpy(key_chunks[i], "");
+	}
+
+	for(int i = 0; i < key_length; i++){
+		char digit = key[i];
+		key_chunks[chunk_counter][digit_counter] = digit;
+		//printf("chunk: %i, digit: %i, value: %c\n", chunk_counter, digit_counter, digit);
+
+		if(digit_counter == 31){
+			key_chunks[chunk_counter][(digit_counter + 1)] = '\0';
+			chunk_counter++;
+			digit_counter = 0;
+		}
+		else{
+			digit_counter++;
+		}
+	}
+
+	for(int i = 0; i < 14; i++){
+		//printf("%i:  %s\n", i, key_chunks[i]);
+		strcpy(destination[i], key_chunks[i]);
+	}
+}
+
+
 void makeSBoxes(char* destination, char* key){
 	printf("yeet\n");
 }
 
 
 void makePBoxes(char* destination, char* key){
-	printf("yeet\n");
+	// yeet
 }
 
 
