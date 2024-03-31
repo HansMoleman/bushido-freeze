@@ -16,6 +16,7 @@
 
 void addModulo2(char* destination, char* addend_a, char* addend_b);
 int  binaryToInt(char* binary_rep);
+void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d);
 void getPBox(char* destination, int index, char* pbox);
@@ -37,13 +38,17 @@ int main(int argc, char* argv[]){
 	char sboxes[((32 * 256 * 4) + 1)] = "";
 	char pbox[((18 * 32) + 1)] = "";
 
-	loadPBoxBin(pbox);
-	//printf("%s\n", pbox);
 	loadSBoxBin(sboxes);
-	//printf("%s\n", sboxes);
+	makePBoxes(pbox, local_key);
+	//char pbox_ready[((18 * 32) + 1)] = "";
+	//char sbox_ready[((32 * 256 * 4) + 1)] = "";
+	preparePSBoxes(pbox, sboxes, pbox, sboxes);
 
-	//char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
-	//char encrdata[65] = "";
+	char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
+	char encrdata[65] = "";
+	blowfishForwards(encrdata, pbox, sboxes, testdata);
+	printf("%s\n", encrdata);
+
 	//blowfishForwards(encrdata, pbox, sboxes, testdata);
 	//printf("%s\n", encrdata);
 
@@ -52,12 +57,12 @@ int main(int argc, char* argv[]){
 	//char** chunks = key_chunks;
 	//makeKeyChunks(key_chunks, local_key);
 
-	char pbox_key[((32 * 18) + 1)] = "";
-	makePBoxes(pbox_key, local_key);
+	//char pbox_key[((32 * 18) + 1)] = "";
+	//makePBoxes(pbox_key, local_key);
 	
-	char pbox_new[((32 * 18) + 1)] = "";
-	char sbox_new[((32 * 265 * 4) + 1)] = "";
-	preparePSBoxes(pbox_new, sbox_new, pbox_key, sboxes);
+	//char pbox_new[((32 * 18) + 1)] = "";
+	//char sbox_new[((32 * 265 * 4) + 1)] = "";
+	//preparePSBoxes(pbox_new, sbox_new, pbox_key, sboxes);
 
 
 	return 0;
@@ -116,6 +121,23 @@ void addModulo2(char* destination, char* addend_a, char* addend_b){
 
 }
 
+
+int binaryToInt(char* binary_rep){
+	int power = 0;
+    int sum = 0;
+    for(int i = 7; 0 <= i; i--){
+        int base = binary_rep[i] - '0';
+        sum += (base * (1 << power));
+        power++;
+    }
+
+    return sum;
+}
+
+
+void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata){
+	// yeet
+}
 
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 	char xl[33] = "";
@@ -238,19 +260,6 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 	strcat(encx, xr);
 
 	strcpy(destination, encx);
-}
-
-
-int binaryToInt(char* binary_rep){
-	int power = 0;
-    int sum = 0;
-    for(int i = 7; 0 <= i; i--){
-        int base = binary_rep[i] - '0';
-        sum += (base * (1 << power));
-        power++;
-    }
-
-    return sum;
 }
 
 
@@ -442,7 +451,7 @@ void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
 	char sbox_new[((32 * 256 * 4) + 1)] = "";
 	strcpy(pbox_new, pbox);
 	strcpy(sbox_new, sboxes);
-	printf("before\n%s\n", pbox_new);
+	//printf("before\n%s\n", pbox_new);
 
 	char x_encr[65] = "";
 	blowfishForwards(x_encr, pbox_new, sbox_new, zero_string);
@@ -461,10 +470,10 @@ void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
 		strcpy(new_xencr, x_encr);
 		blowfishForwards(x_encr, pbox_new, sbox_new, new_xencr);
 	}
-	printf("after\n%s\n", pbox_new);
+	//printf("after\n%s\n", pbox_new);
 
 	// do s-boxes
-	printf("sbox-before\n%s\n", sbox_new);
+	//printf("sbox-before\n%s\n", sbox_new);
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < (256 / 2); j++){
 			int start_j = (i * 256) + (j * 64);
@@ -480,7 +489,10 @@ void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
 			blowfishForwards(x_encr, pbox_new, sbox_new, new_xencr);
 		}
 	}
-	printf("sbox-after\n%s\n", sbox_new);
+	//printf("sbox-after\n%s\n", sbox_new);
+
+	strcpy(pbox_dest, pbox_new);
+	strcpy(sbox_dest, sbox_new);
 }
 
 
