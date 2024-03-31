@@ -17,6 +17,7 @@
 void addModulo2(char* destination, char* addend_a, char* addend_b);
 int  binaryToInt(char* binary_rep);
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
+void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d);
 void getPBox(char* destination, int index, char* pbox);
 void getSBox(char* destination, int box, int index, char* sbox);
 void loadPBoxBin(char* destination);
@@ -105,7 +106,7 @@ void addModulo2(char* destination, char* addend_a, char* addend_b){
 	for(int i = 31; 0 <= i; i--){
 		char state[4] = "";
 		sprintf(state, "%c%c%c", addend_a[i], addend_b[i], carry);
-		printf("%s", state);
+		//printf("%s", state);
 
 		if(strcmp(state, "000") == 0){
 			digit = '0';
@@ -139,7 +140,7 @@ void addModulo2(char* destination, char* addend_a, char* addend_b){
 		else{
 			printf("--error--");
 		}
-		printf("%c\n", digit); 
+		//printf("%c\n", digit); 
 
 		result[i] = digit;
 	}
@@ -174,7 +175,9 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 
 		getPBox(pbox_i, i, pbox);
 		xor(xl_new, xl, pbox_i);
+		strcpy(xl, xl_new);
 
+		// get required sub-boxes
 		char abin[9] = "";
 		char bbin[9] = "";
 		char cbin[9] = "";
@@ -219,10 +222,14 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 		getSBox(sbox2c, 2, cind, sboxes);
 		getSBox(sbox3d, 3, dind, sboxes);
 
-		//printf("(0, %i):  %s\n", aind, sbox0a);
-		//printf("(1, %i):  %s\n", bind, sbox1b);
-		//printf("(2, %i):  %s\n", cind, sbox2c);
-		//printf("(3, %i):  %s\n", dind, sbox3d);
+		printf("(0, %i):  %s\n", aind, sbox0a);
+		printf("(1, %i):  %s\n", bind, sbox1b);
+		printf("(2, %i):  %s\n", cind, sbox2c);
+		printf("(3, %i):  %s\n", dind, sbox3d);
+
+		char f_xl[33] = "";
+		blowfishFunction(f_xl, sbox0a, sbox1b, sbox2c, sbox3d);
+		printf("%s\n", f_xl);
 
 	}
 }
@@ -243,8 +250,16 @@ int binaryToInt(char* binary_rep){
 }
 
 
-void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d, char* xl){
-	// yeet
+void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d){
+	char sbox0_mod_sbox1[33] = "";
+	char sbox0m1_xor_sbox2[33] = "";
+	char sbox0m1xor2_mod_sbox3[33] = "";
+
+	addModulo2(sbox0_mod_sbox1, sbox0a, sbox1b);
+	xor(sbox0m1_xor_sbox2, sbox0_mod_sbox1, sbox2c);
+	addModulo2(sbox0m1xor2_mod_sbox3, sbox0m1_xor_sbox2, sbox3d);
+
+	strcpy(destination, sbox0m1xor2_mod_sbox3);
 }
 
 
