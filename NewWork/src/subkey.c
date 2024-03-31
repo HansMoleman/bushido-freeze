@@ -83,12 +83,13 @@ int main(int argc, char* argv[]){
 	printf("2, %i: %s\n", 255, sbox2_255);
 	*/
 
-	char addend_a[] = "01001000011111001010110001100000";
-	char addend_b[] = "11100110101110100000110110011001";
-	//                 10101111000001101011000111111001
-	char addmodul[33] = "";
-	addModulo2(addmodul, addend_a, addend_b);
-	printf("modulo 2^32: %s\n", addmodul);
+	//char addend_a[] = "01001000011111001010110001100000";
+	//char addend_b[] = "11100110101110100000110110011001";
+	//                   00101111001101101011100111111001
+	//                 0100101111001101101011100111111001
+	//char addmodul[33] = "";
+	//addModulo2(addmodul, addend_a, addend_b);
+	//printf("modulo 2^32: %s\n", addmodul);
 
 
 	return 0;
@@ -98,22 +99,49 @@ int main(int argc, char* argv[]){
 
 void addModulo2(char* destination, char* addend_a, char* addend_b){
 	char result[33] = "";
-	char carry[2] = "0";
+	char carry = '0';
+	char digit = '0';
 
 	for(int i = 31; 0 <= i; i--){
-		char digit[2];
-		if((addend_a[i] == '0' && addend_b[i] == '1' && (strcmp(carry, "0") || strcmp(carry, "1"))) || (addend_a[i] == '1' && addend_b[i] == '0' && (strcmp(carry, "0") || strcmp(carry, "1"))) || (addend_a[i] == '0' && addend_b[i] == '0' && strcmp(carry,"1"))){
-			sprintf(digit, "%c", '1');
+		char state[4] = "";
+		sprintf(state, "%c%c%c", addend_a[i], addend_b[i], carry);
+		printf("%s", state);
+
+		if(strcmp(state, "000") == 0){
+			digit = '0';
+		}
+		else if(strcmp(state, "001") == 0){
+			digit = '1';
+			carry = '0';
+		}
+		else if(strcmp(state, "010") == 0){
+			digit = '1';
+		}
+		else if(strcmp(state, "011") == 0){
+			digit = '0';
+			carry = '1';
+		}
+		else if(strcmp(state, "100") == 0){
+			digit = '1';
+		}
+		else if(strcmp(state, "101") == 0){
+			digit = '0';
+			carry = '1';
+		}
+		else if(strcmp(state, "110") == 0){
+			digit = '0';
+			carry = '1';
+		}
+		else if(strcmp(state, "111") == 0){
+			digit = '1';
+			carry = '1';
 		}
 		else{
-			//digit = "0";
-			sprintf(digit, "%c", '0');
-			//carry = "1";
-			sprintf(carry, "%c", '1');
+			printf("--error--");
 		}
+		printf("%c\n", digit); 
 
-		char digitc = digit[0];
-		result[i] = digitc;
+		result[i] = digit;
 	}
 
 	strcpy(destination, result);
