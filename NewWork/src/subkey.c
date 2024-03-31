@@ -23,8 +23,9 @@ void getSBox(char* destination, int box, int index, char* sbox);
 void loadPBoxBin(char* destination);
 void loadSBoxBin(char* destination);
 void makeKeyChunks(char destination[14][33], char* key);
-void makeSBoxes(char* destination, char* key);
+//void makeSBoxes(char* destination, char* key);
 void makePBoxes(char* destination, char* key);
+void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes);
 void updateLocalCache(char* sboxes, char* pboxes);
 void xor(char* xl_new, char* xl, char* pbox_i);
 
@@ -47,13 +48,16 @@ int main(int argc, char* argv[]){
 	//printf("%s\n", encrdata);
 
 	//char pbox_key[449] = "";
-	char key_chunks[14][33];
+	//char key_chunks[14][33];
 	//char** chunks = key_chunks;
-	makeKeyChunks(key_chunks, local_key);
+	//makeKeyChunks(key_chunks, local_key);
 
-	for(int i = 0; i < 14; i++){
-		printf("%i: %s\n", i, key_chunks[i]);
-	}
+	char pbox_key[((32 * 18) + 1)] = "";
+	makePBoxes(pbox_key, local_key);
+	
+	char pbox_new[((32 * 18) + 1)] = "";
+	char sbox_new[((32 * 265 * 4) + 1)] = "";
+	preparePSBoxes(pbox_new, sbox_new, pbox_key, sboxes);
 
 
 	return 0;
@@ -395,13 +399,119 @@ void makeKeyChunks(char destination[14][33], char* key){
 }
 
 
+/*
 void makeSBoxes(char* destination, char* key){
-	printf("yeet\n");
+	char key_chunks[14][33];
+	char sbox_bin[((32 * 256 * 4) + 1)] = "";
+	char new_sboxes[((32 * 256 * 4) + 1)] = "";
+	int  targ_chunk = 0;
+
+	loadSBoxBin(sbox_bin);
+	makeKeyChunks(key_chunks, key);
+
+	int box_num = 0;
+	int ind_num = 0;
+	for(int i = 0; i < box_num; i++){
+		for(int j = 0; j < ind_num; j++){
+			char chunk[33] = "";
+			strcpy(chunk, key_chunks[targ_chunk]);
+			if(strcmp(key_chunks[(targ_chunk + 1)], "") == 0){
+				targ_chunk = 0;
+			}
+			else{
+				targ_chunk++;
+			}
+
+			char sbox_i_j[33] = "";
+			getSBox(sbox_i_j, i, j, sbox_bin);
+			char sbox_xor_chunk[33] = "";
+			xor(sbox_xor_chunk, sbox_i_j, chunk);
+		}
+	}
+}
+*/
+
+void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
+	char zero_string[65] = "";
+	for(int i = 0; i < 64; i++){
+		zero_string[i] = '0';
+	}
+	zero_string[64] = '\0';
+
+	char pbox_new[((32 * 18) + 1)] = "";
+	char sbox_new[((32 * 256 * 4) + 1)] = "";
+	strcpy(pbox_new, pbox);
+	strcpy(sbox_new, sboxes);
+	printf("before\n%s\n", pbox_new);
+
+	char x_encr[65] = "";
+	blowfishForwards(x_encr, pbox_new, sbox_new, zero_string);
+
+	// do p-boxes
+	for(int i = 0; i < 9; i++){
+		int start_i = (64 * i);
+		int finsh_i = (start_i + 64);
+		int counter = 0;
+		for(int j = start_i; j < finsh_i; j++){
+			pbox_new[j] = x_encr[counter];
+			counter++;
+		}
+
+		char new_xencr[65] = "";
+		strcpy(new_xencr, x_encr);
+		blowfishForwards(x_encr, pbox_new, sbox_new, new_xencr);
+	}
+	printf("after\n%s\n", pbox_new);
+
+	// do s-boxes
+	printf("sbox-before\n%s\n", sbox_new);
+	for(int i = 0; i < 4; i++){
+		for(int j = 0; j < (256 / 2); j++){
+			int start_j = (i * 256) + (j * 64);
+			int finsh_j = (start_j + 64);
+			int counter = 0;
+			for(int k = start_j; k < finsh_j; k++){
+				sbox_new[k] = x_encr[counter];
+				counter++;
+			}
+
+			char new_xencr[65] = "";
+			strcpy(new_xencr, x_encr);
+			blowfishForwards(x_encr, pbox_new, sbox_new, new_xencr);
+		}
+	}
+	printf("sbox-after\n%s\n", sbox_new);
 }
 
 
 void makePBoxes(char* destination, char* key){
-	// yeet
+	char key_chunks[14][33];
+	char pbox_bin[((32 * 18) + 1)] = "";
+	char new_pboxes[((32 * 18) + 1)] = "";
+	int  targ_chunk = 0;
+
+	loadPBoxBin(pbox_bin);
+	makeKeyChunks(key_chunks, key);
+
+	for(int i = 0; i < 18; i++){
+		char chunk[33] = "";
+		strcpy(chunk, key_chunks[targ_chunk]);
+		if(strcmp(key_chunks[(targ_chunk + 1)], "") == 0){
+			targ_chunk = 0;
+		}
+		else{
+			targ_chunk++;
+		}
+
+		char pbox_i[33] = "";
+		getPBox(pbox_i, i, pbox_bin);
+		char pbox_xor_chunk[33] = "";
+		xor(pbox_xor_chunk, pbox_i, chunk);
+		strcat(new_pboxes, pbox_xor_chunk);
+		//printf("Pi: %s\nKi: %s\nPk: %s\n", pbox_i, chunk, pbox_xor_chunk);
+	}
+
+	strcpy(destination, new_pboxes);
 }
 
 
