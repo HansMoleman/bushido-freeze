@@ -46,8 +46,14 @@ int main(int argc, char* argv[]){
 
 	char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
 	char encrdata[65] = "";
+	char decrdata[65] = "";
 	blowfishForwards(encrdata, pbox, sboxes, testdata);
-	printf("%s\n", encrdata);
+	//printf("%s\n", encrdata);
+
+	blowfishBackwards(decrdata, pbox, sboxes, encrdata);
+
+	printf("xdata: %s\n", testdata);
+	printf("xdecr: %s\n", decrdata);
 
 	//blowfishForwards(encrdata, pbox, sboxes, testdata);
 	//printf("%s\n", encrdata);
@@ -136,7 +142,128 @@ int binaryToInt(char* binary_rep){
 
 
 void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata){
-	// yeet
+	char xl[33] = "";
+	char xr[33] = "";
+
+	for(int i = 0; i < strlen(xdata); i++){
+		if(i < 32){
+			char chr[2] = "";
+			sprintf(chr, "%c", xdata[i]);
+			strcat(xl, chr);
+		}
+		else{
+			char chr[2] = "";
+			sprintf(chr, "%c", xdata[i]);
+			strcat(xr, chr);
+		}
+	}
+
+	//printf("xl: %s\n", xl);
+	//printf("xr: %s\n", xr);
+	int p_i = 17;
+	for(int i = 0; i < 16; i++){
+		char xl_new[33] = "";
+		char pbox_i[33] = "";
+
+		getPBox(pbox_i, p_i, pbox);
+		xor(xl_new, xl, pbox_i);
+		strcpy(xl, xl_new);
+		p_i--;
+
+		// get required sub-boxes
+		char abin[9] = "";
+		char bbin[9] = "";
+		char cbin[9] = "";
+		char dbin[9] = "";
+		for(int j = 0; j < 32; j++){
+			if(0 <= j && j < 8){
+				// a
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(abin, digit);
+			}
+			else if(8 <= j && j < 16){
+				// b
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(bbin, digit);
+			}
+			else if(16 <= j && j < 24){
+				// c
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(cbin, digit);
+			}
+			else{
+				// d
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(dbin, digit);
+			}
+		}
+		int aind = binaryToInt(abin);
+		int bind = binaryToInt(bbin);
+		int cind = binaryToInt(cbin);
+		int dind = binaryToInt(dbin);
+		
+		char sbox0a[33] = "";
+		char sbox1b[33] = "";
+		char sbox2c[33] = "";
+		char sbox3d[33] = "";
+		getSBox(sbox0a, 0, aind, sboxes);
+		getSBox(sbox1b, 1, bind, sboxes);
+		getSBox(sbox2c, 2, cind, sboxes);
+		getSBox(sbox3d, 3, dind, sboxes);
+
+		//printf("(0, %i):  %s\n", aind, sbox0a);
+		//printf("(1, %i):  %s\n", bind, sbox1b);
+		//printf("(2, %i):  %s\n", cind, sbox2c);
+		//printf("(3, %i):  %s\n", dind, sbox3d);
+
+		char f_xl[33] = "";
+		blowfishFunction(f_xl, sbox0a, sbox1b, sbox2c, sbox3d);
+		//printf("%s\n", f_xl);
+		char fxl_xor_xr[33] = "";
+		xor(fxl_xor_xr, f_xl, xr);
+		strcpy(xr, fxl_xor_xr);
+
+		// swap xl & xr
+		//printf("\nbefore\n");
+		//printf("xl: %s\n", xl);
+		//printf("xr: %s\n", xr);
+		char temp[33] = "";
+		strcpy(temp, xl);
+		strcpy(xl, xr);
+		strcpy(xr, temp);
+		//printf("after\n");
+		//printf("xl: %s\n", xl);
+		//printf("xr: %s\n", xr);
+	}
+
+	// undo last swap
+	char temp[33] = "";
+	strcpy(temp, xl);
+	strcpy(xl, xr);
+	strcpy(xr, temp);
+
+	char pbox_1[33] = "";
+	char pbox_0[33] = "";
+	getPBox(pbox_1, 1, pbox);
+	getPBox(pbox_0, 0, pbox);
+
+	char new_xr[33] = "";
+	char new_xl[33] = "";
+	xor(new_xr, xr, pbox_1);
+	xor(new_xl, xl, pbox_0);
+	strcpy(xr, new_xr);
+	strcpy(xl, new_xl);
+
+	// recombine xl & xr
+	char encx[65] = "";
+	strcat(encx, xl);
+	strcat(encx, xr);
+
+	strcpy(destination, encx);
 }
 
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
