@@ -45,19 +45,21 @@ int main(int argc, char* argv[]){
 	//char sbox_ready[((32 * 256 * 4) + 1)] = "";
 	preparePSBoxes(pbox, sboxes, pbox, sboxes);
 
-	updateLocalCache(pbox, sboxes);
-	printf("local-cache updated.\n");
+	//updateLocalCache(pbox, sboxes);
+	//printf("local-cache updated.\n");
+	loadFromCache(pbox, sboxes);
+	printf("\nloaded local-cache.\n");
 
-	char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
-	char encrdata[65] = "";
-	char decrdata[65] = "";
-	blowfishForwards(encrdata, pbox, sboxes, testdata);
+	//char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
+	//char encrdata[65] = "";
+	//char decrdata[65] = "";
+	//blowfishForwards(encrdata, pbox, sboxes, testdata);
 	//printf("%s\n", encrdata);
 
-	blowfishBackwards(decrdata, pbox, sboxes, encrdata);
+	//blowfishBackwards(decrdata, pbox, sboxes, encrdata);
 
-	printf("xdata: %s\n", testdata);
-	printf("xdecr: %s\n", decrdata);
+	//printf("xdata: %s\n", testdata);
+	//printf("xdecr: %s\n", decrdata);
 
 	//blowfishForwards(encrdata, pbox, sboxes, testdata);
 	//printf("%s\n", encrdata);
@@ -439,7 +441,39 @@ void getSBox(char* destination, int box, int index, char* sbox){
 
 
 void loadFromCache(char* pbox_dest, char* sboxes_dest){
-	printf("yeet\n");
+	char pbox[((32 * 18) + 1)] = "";
+	char sbox[((32 * 256 * 4) + 1)] = "";
+	char str_in[((32 * 18) + (32 * 256 * 4) + 1)] = "";
+	FILE* fptr;
+
+	fptr = fopen(LOCALCACHE, "r");
+	if(fptr == NULL){
+		printf("ERROR: local-cache file not found!\n");
+	}
+	else{
+		fscanf(fptr, "%s", str_in);
+		strcat(str_in, "");
+		fclose(fptr);
+	}
+
+	for(int i = 0; i < (32 * 18); i++){
+		pbox[i] = str_in[i];
+		if(i == ((32 * 18) - 1)){
+			pbox[(i + 1)] = '\0';
+		}
+	}
+
+	for(int i = (32 * 18); i < ((32 * 256 * 4) + (32 * 18)); i++){
+		int si = (i - (32 * 18));
+		sbox[si] = str_in[i];
+
+		if(i == ((32 * 256 * 4) - 1)){
+			sbox[(si + 1)] = '\0';
+		}
+	}
+
+	strcpy(pbox_dest, pbox);
+	strcpy(sboxes_dest, sbox);
 }
 
 
