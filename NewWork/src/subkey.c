@@ -21,13 +21,14 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d);
 void getPBox(char* destination, int index, char* pbox);
 void getSBox(char* destination, int box, int index, char* sbox);
+void loadFromCache(char* pbox_dest, char* sboxes_dest);
 void loadPBoxBin(char* destination);
 void loadSBoxBin(char* destination);
 void makeKeyChunks(char destination[14][33], char* key);
 //void makeSBoxes(char* destination, char* key);
 void makePBoxes(char* destination, char* key);
 void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes);
-void updateLocalCache(char* sboxes, char* pboxes);
+void updateLocalCache(char* pbox, char* sboxes);
 void xor(char* xl_new, char* xl, char* pbox_i);
 
 
@@ -43,6 +44,9 @@ int main(int argc, char* argv[]){
 	//char pbox_ready[((18 * 32) + 1)] = "";
 	//char sbox_ready[((32 * 256 * 4) + 1)] = "";
 	preparePSBoxes(pbox, sboxes, pbox, sboxes);
+
+	updateLocalCache(pbox, sboxes);
+	printf("local-cache updated.\n");
 
 	char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
 	char encrdata[65] = "";
@@ -434,6 +438,11 @@ void getSBox(char* destination, int box, int index, char* sbox){
 }
 
 
+void loadFromCache(char* pbox_dest, char* sboxes_dest){
+	printf("yeet\n");
+}
+
+
 void loadSBoxBin(char* destination){
 	char sbox1path[] = "Pi/bin/sbox1.bin";
 	char sbox2path[] = "Pi/bin/sbox2.bin";
@@ -654,8 +663,25 @@ void makePBoxes(char* destination, char* key){
 }
 
 
-void updateLocalCache(char* sboxes, char* pboxes){
-	printf("yetet\n");
+void updateLocalCache(char* pbox, char* sboxes){
+	// write pbox chunk, then sboxes chunk, to file
+	//int pbox_size = (32 * 18);
+	//int sbox_size = (32 * 256 * 4);
+	char str_out[((32 * 18) + (32 * 256 * 4) + 1)] = "";
+	FILE* fptr;
+
+	strcpy(str_out, pbox);
+	strcat(str_out, sboxes);
+
+	fptr = fopen(LOCALCACHE, "w");
+
+	if(fptr == NULL){
+		printf("ERROR: local-cache file not found!\n");
+	}
+	else{
+		fprintf(fptr, "%s", str_out);
+		fclose(fptr);
+	}
 }
 
 
