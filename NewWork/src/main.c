@@ -35,14 +35,14 @@ void   generateLocalKey(char* destination);
 
 int  binaryToInt(char* binary_rep);
 void charToBinary(char* destination, char ascii_char);
+void loadPBoxBin(char* destination);
+void loadSBoxBin(char* destination);
 
 
 // MAIN FUNCTION
 
 int main(int argc, char* argv[]){
-	char random_key[((32 * 8) + 1)] = "";
-	generateLocalKey(random_key);
-	printf("%s\n", random_key);
+	initLocal();
 	
 	return 0;
 }
@@ -172,9 +172,16 @@ void generateLocalKey(char* destination){
 void initLocal(){
 
 	if(!(access(LOCALCACHE, F_OK) == 0)){
-		char local_key[] = "";
+		char local_key[((32 * 8) + 1)] = "";
 		char sboxes[((32 * 256 * 4) + 1)] = "";
 		char pbox[((18 * 32) + 1)] = "";
+
+		generateLocalKey(local_key);
+		loadPBoxBin(pbox);
+		loadSBoxBin(sboxes);
+
+		printf("pbox\n%s\n", pbox);
+		printf("\nsbox\n%s\n", sboxes);
 	}
 	else {
 		printf("local cache already exists.\n");
@@ -251,4 +258,71 @@ void charToBinary(char* destination, char ascii_char){
     }
 
     strcpy(destination, binary_rep);
+}
+
+void loadSBoxBin(char* destination){
+	char sbox1path[] = "Pi/bin/sbox1.bin";
+	char sbox2path[] = "Pi/bin/sbox2.bin";
+	char sbox3path[] = "Pi/bin/sbox3.bin";
+	char sbox4path[] = "Pi/bin/sbox4.bin";
+	char sbox1vals[((32 * 256) + 1)] = "";
+	char sbox2vals[((32 * 256) + 1)] = "";
+	char sbox3vals[((32 * 256) + 1)] = "";
+	char sbox4vals[((32 * 256) + 1)] = "";
+	char sboxes[((32 * 256 * 4) + 1)] = "";
+	FILE* fptr;
+
+	if((fptr = fopen(sbox1path, "r")) == NULL){
+		printf("ERROR");
+	}
+	else {
+		fscanf(fptr, "%s", sbox1vals);
+		fclose(fptr);
+	}
+
+	if((fptr = fopen(sbox2path, "r")) == NULL){
+		printf("ERROR");
+	}
+	else {
+		fscanf(fptr, "%s", sbox2vals);
+		fclose(fptr);
+	}
+
+	if((fptr = fopen(sbox3path, "r")) == NULL){
+		printf("ERROR");
+	}
+	else {
+		fscanf(fptr, "%s", sbox3vals);
+		fclose(fptr);
+	}
+
+	if((fptr = fopen(sbox4path, "r")) == NULL){
+		printf("ERROR");
+	}
+	else {
+		fscanf(fptr, "%s", sbox4vals);
+		fclose(fptr);
+	}
+
+	strcat(sboxes, sbox1vals);
+	strcat(sboxes, sbox2vals);
+	strcat(sboxes, sbox3vals);
+	strcat(sboxes, sbox4vals);
+	strcpy(destination, sboxes);
+}
+
+void loadPBoxBin(char* destination){
+	char filepath[] = "Pi/bin/pbox.bin";
+	char pvalues[((18 * 32) + 1)] = "";
+
+	FILE* fptr = fopen(filepath, "r");
+
+	if(fptr == NULL){
+		printf("ERROR: could not load file.\n");
+	}
+	else {
+		fscanf(fptr, "%s", pvalues);
+		fclose(fptr);
+		strcpy(destination, pvalues);
+	}
 }
