@@ -14,6 +14,7 @@
 
 
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,13 +31,15 @@ void   initLocal();
 
 char** doLocalEncrypt();
 char** doLocalDecrypt();
-void   generateLocalKey();
+void   generateLocalKey(char* destination);
 
 
 // MAIN FUNCTION
 
 int main(int argc, char* argv[]){
-	initLocal();
+	char random_key[33] = "";
+	generateLocalKey(random_key);
+	printf("%s\n", random_key);
 	
 	return 0;
 }
@@ -109,51 +112,53 @@ char  binaryToChar(char* binary_rep){
 }
 
 
-void initLocal(){
-	char chb[9] = "";
+void generateLocalKey(char* destination){
 	int min_ascii = 33;
 	int max_ascii = 126;
+	int exclusions[] = {34, 39, 92, 96, 124};
+	int rand_ascii[32];
+
+	int rand_value;
+	srand(time(NULL));
+	for(int i = 0; i < 32; i++){
+		rand_value = rand();
+		rand_value = (rand_value % (max_ascii - min_ascii)) + min_ascii;
+
+		bool is_good = true;
+		for(int i = 0; i < 5; i++){
+			if(exclusions[i] == rand_value){
+				is_good = false;
+			}
+		}
+
+		while(!(is_good)){
+			rand_value = rand();
+			rand_value = (rand_value % (max_ascii - min_ascii)) + min_ascii;
+
+			is_good = true;
+			for(int i = 0; i < 5; i++){
+				if(exclusions[i] == rand_value){
+					is_good = false;
+				}
+			}
+		}
+		rand_ascii[i] = rand_value;
+	}
+
+	char key_string[33] = "";
+	for(int i = 0; i < 32; i++){
+		key_string[i] = rand_ascii[i];
+	}
+	strcat(key_string, "");
+
+	strcpy(destination, key_string);
+}
+
+
+void initLocal(){
 
 	if(!(access(LOCALCACHE, F_OK) == 0)){
-		int rand_ascii[32];
-		int randv;
-
-		srand(time(NULL));
-		for(int i = 0; i < 32; i++){
-			randv = rand();
-			//printf("%i\n", randv);
-			randv = (randv % (max_ascii - min_ascii)) + min_ascii;
-			rand_ascii[i] = randv;
-		}
-
-		//printf("\n");
-		int  rsize = sizeof(rand_ascii) / sizeof(rand_ascii[0]);
-		char key[33] = "";
-		char bin[((32 * 8) + 1)] = "";
-		for(int j = 0; j < rsize; j++){
-			strcpy(chb, "");
-			//printf("%s\n", chb);
-			char chr = rand_ascii[j];
-			//printf("%c\n", chr);
-			charToBinary(chb, chr);
-			//printf("%s\n", chb);
-			//printf("%i -> %c -> %s\n", rand_ascii[j], chr, chb);
-			char chr_str[2] = "";
-			sprintf(chr_str, "%c", chr);
-			strcat(key, chr_str);
-			strcat(bin, chb);
-		}
-
-		printf("key: %s\n", key);
-		printf("bin: %s\n", bin);
-
-		// create p-boxes and s-boxes with key
-
-		/*
-		FILE* fptr = fopen(LOCALCACHE, "w");
-		fprintf(fptr, "%s\n", bin);
-		fclose(fptr);
-		*/
+		printf("need to build local cache...\n");
 	}
 	else {
 		printf("local cache already exists.\n");
