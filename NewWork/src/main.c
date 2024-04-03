@@ -25,19 +25,22 @@
 #define LOCALCACHE "local-cache.bin"
 
 
-void   charToBinary(char* destination, char a_char);
-char   binaryToChar(char* binary_rep);
+//void   charToBinary(char* destination, char a_char);
+//char   binaryToChar(char* binary_rep);
 void   initLocal();
 
 char** doLocalEncrypt();
 char** doLocalDecrypt();
 void   generateLocalKey(char* destination);
 
+int  binaryToInt(char* binary_rep);
+void charToBinary(char* destination, char ascii_char);
+
 
 // MAIN FUNCTION
 
 int main(int argc, char* argv[]){
-	char random_key[33] = "";
+	char random_key[((32 * 8) + 1)] = "";
 	generateLocalKey(random_key);
 	printf("%s\n", random_key);
 	
@@ -45,6 +48,7 @@ int main(int argc, char* argv[]){
 }
 
 
+/*
 void charToBinary(char* destination, char a_char){
 	char binary_rep[9] = "";
     int remainders[8];
@@ -66,7 +70,6 @@ void charToBinary(char* destination, char a_char){
     }
     //printf("bin_rep: %s\n", binary_rep);
 
-    /*
     int binstr_len = 0;
     char target = binary_rep[binstr_len];
     while(target != '\0'){
@@ -82,7 +85,7 @@ void charToBinary(char* destination, char a_char){
         strcpy(binary_rep, tempstr);
         binstr_len++;
     }
-    */
+
 
     int binstr_len = strlen(binary_rep);
     while(binstr_len < 8){
@@ -96,8 +99,9 @@ void charToBinary(char* destination, char a_char){
     strcpy(destination, binary_rep);
     //printf("post-copy\n");
 }
+*/
 
-
+/*
 char  binaryToChar(char* binary_rep){
 	int power = 0;
     int sum = 0;
@@ -110,6 +114,7 @@ char  binaryToChar(char* binary_rep){
     char ascii = sum;
     return ascii;
 }
+*/
 
 
 void generateLocalKey(char* destination){
@@ -145,20 +150,31 @@ void generateLocalKey(char* destination){
 		rand_ascii[i] = rand_value;
 	}
 
+	/*
 	char key_string[33] = "";
 	for(int i = 0; i < 32; i++){
 		key_string[i] = rand_ascii[i];
 	}
 	strcat(key_string, "");
+	*/
 
-	strcpy(destination, key_string);
+	char key_binary[((32 * 8) + 1)] = "";
+	for(int i = 0; i < 32; i++){
+		char binary[9] = "";
+		charToBinary(binary, rand_ascii[i]);
+		strcat(key_binary, binary);
+	}
+
+	strcpy(destination, key_binary);
 }
 
 
 void initLocal(){
 
 	if(!(access(LOCALCACHE, F_OK) == 0)){
-		printf("need to build local cache...\n");
+		char local_key[] = "";
+		char sboxes[((32 * 256 * 4) + 1)] = "";
+		char pbox[((18 * 32) + 1)] = "";
 	}
 	else {
 		printf("local cache already exists.\n");
@@ -184,3 +200,55 @@ void initLocal(){
 char** doLocalEncrypt() {
 }
 */
+
+
+
+int binaryToInt(char* binary_rep){
+	int power = 0;
+    int sum = 0;
+    for(int i = 7; 0 <= i; i--){
+        int base = binary_rep[i] - '0';
+        sum += (base * (1 << power));
+        power++;
+    }
+
+    return sum;
+}
+
+void charToBinary(char* destination, char ascii_char){
+    char binary_rep[9] = "";
+    int remainders[9];
+    int quotient = ascii_char;
+    int remainder = 0;
+    int count = 0;
+
+    while(quotient > 0){
+        remainder = quotient % 2;
+        quotient = quotient / 2;
+        remainders[count] = remainder;
+        count++;
+    }
+
+    for(int i = (count - 1); 0 <= i; i--){
+        char digit[2] = "";
+        sprintf(digit, "%d", remainders[i]);
+        strcat(binary_rep, digit);
+    }
+
+    int binstr_len = 0;
+    char target = binary_rep[binstr_len];
+    while(target != '\0'){
+        binstr_len++;
+        target = binary_rep[binstr_len];
+    }
+
+    while(binstr_len < 8){
+        char tempstr[9] = "";
+        tempstr[0] = '0';
+        strcat(tempstr, binary_rep);
+        strcpy(binary_rep, tempstr);
+        binstr_len++;
+    }
+
+    strcpy(destination, binary_rep);
+}
