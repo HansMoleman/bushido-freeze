@@ -32,6 +32,7 @@ void   initLocal();
 char** doLocalEncrypt();
 char** doLocalDecrypt();
 void   generateLocalKey(char* destination);
+void   makeDataChunks(char destination[5][65], char* xdata);
 
 void addModulo2(char* destination, char* addend_a, char* addend_b);
 int  binaryToInt(char* binary_rep);
@@ -40,6 +41,7 @@ void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2
 void charToBinary(char* destination, char ascii_char);
 void getPBox(char* destination, int index, char* pbox);
 void getSBox(char* destination, int box, int index, char* sbox);
+void loadFromCache(char* pbox_dest, char* sboxes_dest);
 void loadPBoxBin(char* destination);
 void loadSBoxBin(char* destination);
 void makeKeyChunks(char destination[14][33], char* key);
@@ -53,6 +55,25 @@ void xor(char* xl_new, char* xl, char* pbox_i);
 
 int main(int argc, char* argv[]){
 	initLocal();
+
+	char local_pbox[((32 * 18) + 1)] = "";
+	char local_sboxes[((32 * 256 * 4) + 1)] = "";
+	loadFromCache(local_pbox, local_sboxes);
+
+	char sample_token[] = "ghp_1gaKhXG02bR4voIGDdllf84CCwvUz30a5jTb";
+	char token_binary[((40 * 8) + 1)] = "";
+	for(int i = 0; i < strlen(sample_token); i++){
+		char binary[9] = "";
+		charToBinary(binary, sample_token[i]);
+		strcat(token_binary, binary);
+	}
+	printf("token binary\n%s\n\n", token_binary);
+
+	char token_chunks[5][65];
+	makeDataChunks(token_chunks, token_binary);
+	for(int i = 0; i < 5; i++){
+		printf("chunk %i\n%s\n", i, token_chunks[i]);
+	}
 	
 	return 0;
 }
@@ -192,10 +213,35 @@ void initLocal(){
 		preparePSBoxes(pbox, sboxes, pbox, sboxes);
 
 		updateLocalCache(pbox, sboxes);
-
 	}
 	else {
 		printf("local cache already exists.\n");
+	}
+}
+
+
+void makeDataChunks(char destination[5][65], char* xdata){
+	char chunk_array[5][65];
+	char chunk_string[65] = "";
+	int  chunk_index = 0;
+	int  chunk_count = 0;
+
+	for(int i = 0; i < (64 * 5); i++){
+		chunk_string[chunk_index] = xdata[i];
+
+		if(chunk_index == 63){
+			strcpy(chunk_array[chunk_count], chunk_string);
+			strcpy(chunk_string, "");
+			chunk_index = 0;
+			chunk_count++;
+		}
+		else{
+			chunk_index++;
+		}
+	}
+
+	for(int i = 0; i < 5; i++){
+		strcpy(destination[i], chunk_array[i]);
 	}
 }
 
@@ -483,6 +529,42 @@ void getSBox(char* destination, int box, int index, char* sbox){
 	}
 
 	strcpy(destination, sbox_i);
+}
+
+void loadFromCache(char* pbox_dest, char* sboxes_dest){
+	char pbox[((32 * 18) + 1)] = "";
+	char sbox[((32 * 256 * 4) + 1)] = "";
+	char str_in[((32 * 18) + (32 * 256 * 4) + 1)] = "";
+	FILE* fptr;
+
+	fptr = fopen(LOCALCACHE, "r");
+	if(fptr == NULL){
+		printf("ERROR: local-cache file not found!\n");
+	}
+	else{
+		fscanf(fptr, "%s", str_in);
+		strcat(str_in, "");
+		fclose(fptr);
+	}
+
+	for(int i = 0; i < (32 * 18); i++){
+		pbox[i] = str_in[i];
+		if(i == ((32 * 18) - 1)){
+			pbox[(i + 1)] = '\0';
+		}
+	}
+
+	for(int i = (32 * 18); i < ((32 * 256 * 4) + (32 * 18)); i++){
+		int si = (i - (32 * 18));
+		sbox[si] = str_in[i];
+
+		if(i == ((32 * 256 * 4) - 1)){
+			sbox[(si + 1)] = '\0';
+		}
+	}
+
+	strcpy(pbox_dest, pbox);
+	strcpy(sboxes_dest, sbox);
 }
 
 void loadSBoxBin(char* destination){
