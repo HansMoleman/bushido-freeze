@@ -19,6 +19,7 @@ int  binaryToInt(char* binary_rep);
 void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d);
+void charToBinary(char* destination, char a_char);
 void getPBox(char* destination, int index, char* pbox);
 void getSBox(char* destination, int box, int index, char* sbox);
 void loadFromCache(char* pbox_dest, char* sboxes_dest);
@@ -39,16 +40,16 @@ int main(int argc, char* argv[]){
 	char sboxes[((32 * 256 * 4) + 1)] = "";
 	char pbox[((18 * 32) + 1)] = "";
 
-	loadSBoxBin(sboxes);
-	makePBoxes(pbox, local_key);
+	//loadSBoxBin(sboxes);
+	//makePBoxes(pbox, local_key);
 	//char pbox_ready[((18 * 32) + 1)] = "";
 	//char sbox_ready[((32 * 256 * 4) + 1)] = "";
-	preparePSBoxes(pbox, sboxes, pbox, sboxes);
+	//preparePSBoxes(pbox, sboxes, pbox, sboxes);
 
 	//updateLocalCache(pbox, sboxes);
 	//printf("local-cache updated.\n");
-	loadFromCache(pbox, sboxes);
-	printf("\nloaded local-cache.\n");
+	//loadFromCache(pbox, sboxes);
+	//printf("\nloaded local-cache.\n");
 
 	//char testdata[] = "0011111000100110011001010111100001101001010110010111000000111011";
 	//char encrdata[65] = "";
@@ -75,6 +76,40 @@ int main(int argc, char* argv[]){
 	//char pbox_new[((32 * 18) + 1)] = "";
 	//char sbox_new[((32 * 265 * 4) + 1)] = "";
 	//preparePSBoxes(pbox_new, sbox_new, pbox_key, sboxes);
+
+	char sample_token[] = "ghp_1gaKhXG02bR4voIGDdllf84CCwvUz30a5jTb";
+	char binary_rep[((40 * 8) + 1)] = "";
+	char binary_digit[9] = "";
+
+	for(int i = 0; i < strlen(sample_token); i++){
+		charToBinary(binary_digit, sample_token[i]);
+		strcat(binary_rep, binary_digit);
+		strcpy(binary_digit, "");
+	}
+
+	printf("binary-encoding:\n%s\n", binary_rep);
+	
+	char sample_value[41] = "";
+	char binary_value[9] = "";
+	int  sample_count = 0;
+	int  binary_index = 0;
+
+	for(int i = 0; i < (40 * 8); i++){
+		binary_value[binary_index] = binary_rep[i];
+		if(binary_index == 7){
+			char character = binaryToInt(binary_value);
+			sample_value[sample_count] = character;
+			strcpy(binary_value, "");
+			binary_index = 0;
+			sample_count++;
+		}
+		else{
+			binary_index++;
+		}
+	}
+
+	printf("original-value:\n%s\n", sample_value);
+
 
 
 	return 0;
@@ -406,6 +441,46 @@ void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2
 	addModulo2(sbox0m1xor2_mod_sbox3, sbox0m1_xor_sbox2, sbox3d);
 
 	strcpy(destination, sbox0m1xor2_mod_sbox3);
+}
+
+
+void charToBinary(char* destination, char a_char){
+    char binary_rep[9] = "";
+    int remainders[9];
+    int quotient = a_char;
+    int remainder = 0;
+    int count = 0;
+
+    while(quotient > 0){
+        remainder = quotient % 2;
+        quotient = quotient / 2;
+        remainders[count] = remainder;
+        count++;
+    }
+
+    for(int i = (count - 1); 0 <= i; i--){
+        char digit[2] = "";
+        sprintf(digit, "%d", remainders[i]);
+        strcat(binary_rep, digit);
+    }
+
+    int binstr_len = 0;
+    char target = binary_rep[binstr_len];
+    while(target != '\0'){
+        binstr_len++;
+        target = binary_rep[binstr_len];
+    }
+
+    //printf("%i\n", binstr_len);
+    while(binstr_len < 8){
+        char tempstr[9] = "";
+        tempstr[0] = '0';
+        strcat(tempstr, binary_rep);
+        strcpy(binary_rep, tempstr);
+        binstr_len++;
+    }
+
+    strcpy(destination, binary_rep);
 }
 
 
