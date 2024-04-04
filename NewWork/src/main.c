@@ -30,10 +30,12 @@
 //char   binaryToChar(char* binary_rep);
 void   initLocal();
 
+void binaryToToken(char* destination, char* token_binary);
 void doLocalEncrypt();
 void doLocalDecrypt();
 void generateLocalKey(char* destination);
 void makeDataChunks(char destination[5][65], char* xdata);
+void tokenToBinary(char* destination, char* token_characters);
 
 void addModulo2(char* destination, char* addend_a, char* addend_b);
 int  binaryToInt(char* binary_rep);
@@ -92,13 +94,9 @@ int main(int argc, char* argv[]){
 				char token_chunks[5][65];
 				char encrypted_data[((5 * 64) + 1)] = "";
 
-				for(int i = 0; i < 40; i++){
-					char binary_char[9] = "";
-					charToBinary(binary_char, user_input[i]);
-					strcat(token_binary, binary_char);
-				}
-
+				tokenToBinary(token_binary, user_input);
 				makeDataChunks(token_chunks, token_binary);
+
 				for(int i = 0; i < 5; i++){
 					char encrypted_chunk[65] = "";
 					blowfishForwards(encrypted_chunk, local_pbox, local_sboxes, token_chunks[i]);
@@ -140,22 +138,7 @@ int main(int argc, char* argv[]){
 			}
 
 			char token_value[41] = "";
-			char char_binary[9] = "";
-			int  binary_index = 0;
-			int  token_index = 0;
-			for(int i = 0; i < (64 * 5); i++){
-				char_binary[binary_index] = decr_data[i];
-				if(binary_index == 7){
-					char character = binaryToInt(char_binary);
-					token_value[token_index] = character;
-					binary_index = 0;
-					token_index++;
-				}
-				else{
-					binary_index++;
-				}
-			}
-			strcat(token_value, "");
+			binaryToToken(token_value, decr_data);
 			printf("%s\n", token_value);
 		}
 		else{
@@ -234,6 +217,32 @@ char  binaryToChar(char* binary_rep){
     return ascii;
 }
 */
+
+
+void binaryToToken(char* destination, char* token_binary){
+	char token_value[41] = "";
+	char char_binary[9] = "";
+	int  binary_index = 0;
+	int  token_index = 0;
+
+	for(int i = 0; i < (40 * 8); i++){
+		char_binary[binary_index] = token_binary[i];
+		if(binary_index == 7){
+			strcat(char_binary, "");
+			char character = binaryToInt(char_binary);
+			token_value[token_index] = character;
+			binary_index = 0;
+			token_index++;
+		}
+		else{
+			binary_index++;
+		}
+	}
+	strcat(token_value, "");
+
+	strcpy(destination, token_value);
+}
+
 
 void doLocalEncrypt(){
 	printf("local encryption...\n");
@@ -335,6 +344,18 @@ void makeDataChunks(char destination[5][65], char* xdata){
 	for(int i = 0; i < 5; i++){
 		strcpy(destination[i], chunk_array[i]);
 	}
+}
+
+void tokenToBinary(char* destination, char* token_characters){
+	char token_binary[((40 * 8) + 1)] = "";
+
+	for(int i = 0; i < 40; i++){
+		char binary_char[9] = "";
+		charToBinary(binary_char, token_characters[i]);
+		strcat(token_binary, binary_char);
+	}
+
+	strcpy(destination, token_binary);
 }
 
 
