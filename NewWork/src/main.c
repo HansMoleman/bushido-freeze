@@ -23,6 +23,7 @@
 
 
 #define LOCALCACHE "local-cache.bin"
+#define LOCALDATA  "local-data.bin"
 
 
 //void   charToBinary(char* destination, char a_char);
@@ -36,6 +37,7 @@ void makeDataChunks(char destination[5][65], char* xdata);
 
 void addModulo2(char* destination, char* addend_a, char* addend_b);
 int  binaryToInt(char* binary_rep);
+void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata);
 void blowfishFunction(char* destination, char* sbox0a, char* sbox1b, char* sbox2c, char* sbox3d);
 void charToBinary(char* destination, char ascii_char);
@@ -71,14 +73,94 @@ int main(int argc, char* argv[]){
 	printf("token binary\n%s\n\n", token_binary);
 	*/
 
-	if(strcmp(argv[1], "update") == 0){
-		printf("do token update...\n");
-	}
-	else if(strcmp(argv[1], "get") == 0){
-		printf("do token retrieval...\n");
+	if(argc < 2){
+		printf("ERROR: insufficient arguments.\n");
 	}
 	else{
-		printf("ERROR: no commands received. Please try again with valid command.\n");
+
+		if(strcmp(argv[1], "update") == 0){
+			char user_input[41] = "";
+			printf("This operation will overwrite existing token data.\n");
+			printf("If you wish to continue enter the new 40-character token, or 'q' to abort operation:\n");
+			scanf("%s", user_input);
+
+			if(strcmp(user_input, "q") == 0){
+				printf("Operation terminated.\n");
+			}
+			else{
+				char token_binary[((40 * 8) + 1)] = "";
+				char token_chunks[5][65];
+				char encrypted_data[((5 * 64) + 1)] = "";
+
+				for(int i = 0; i < 40; i++){
+					char binary_char[9] = "";
+					charToBinary(binary_char, user_input[i]);
+					strcat(token_binary, binary_char);
+				}
+
+				makeDataChunks(token_chunks, token_binary);
+				for(int i = 0; i < 5; i++){
+					char encrypted_chunk[65] = "";
+					blowfishForwards(encrypted_chunk, local_pbox, local_sboxes, token_chunks[i]);
+					strcat(encrypted_data, encrypted_chunk);
+				}
+
+				FILE* fptr = fopen(LOCALDATA, "w");
+				if(fptr == NULL){
+					printf("ERROR: could not access local data file.\n");
+				}
+				else{
+					fprintf(fptr, "%s", encrypted_data);
+					fclose(fptr);
+				}
+
+				printf("token successfully updated.\n");
+			}
+		}
+		else if(strcmp(argv[1], "get") == 0){
+			char local_data[((64 * 5) + 1)] = "";
+			FILE* fptr = fopen(LOCALDATA, "r");
+
+			if(fptr == NULL){
+				printf("ERROR: cannot access local-data file.\n");
+			}
+			else{
+				fscanf(fptr, "%s", local_data);
+				fclose(fptr);
+			}
+
+			char encr_chunks[5][65];
+			char decr_data[((64 * 5) + 1)] = "";
+			makeDataChunks(encr_chunks, local_data);
+
+			for(int i = 0; i < 5; i++){
+				char decr_binary[65] = "";
+				blowfishBackwards(decr_binary, local_pbox, local_sboxes, encr_chunks[i]);
+				strcat(decr_data, decr_binary);
+			}
+
+			char token_value[41] = "";
+			char char_binary[9] = "";
+			int  binary_index = 0;
+			int  token_index = 0;
+			for(int i = 0; i < (64 * 5); i++){
+				char_binary[binary_index] = decr_data[i];
+				if(binary_index == 7){
+					char character = binaryToInt(char_binary);
+					token_value[token_index] = character;
+					binary_index = 0;
+					token_index++;
+				}
+				else{
+					binary_index++;
+				}
+			}
+			strcat(token_value, "");
+			printf("%s\n", token_value);
+		}
+		else{
+			printf("ERROR: command received is not recognized. Please try again with valid command.\n");
+		}
 	}
 	
 	return 0;
@@ -337,6 +419,131 @@ int binaryToInt(char* binary_rep){
     }
 
     return sum;
+}
+
+void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata){
+	char xl[33] = "";
+	char xr[33] = "";
+
+	for(int i = 0; i < strlen(xdata); i++){
+		if(i < 32){
+			char chr[2] = "";
+			sprintf(chr, "%c", xdata[i]);
+			strcat(xl, chr);
+		}
+		else{
+			char chr[2] = "";
+			sprintf(chr, "%c", xdata[i]);
+			strcat(xr, chr);
+		}
+	}
+
+	//printf("xl: %s\n", xl);
+	//printf("xr: %s\n", xr);
+	int p_i = 17;
+	for(int i = 0; i < 16; i++){
+		char xl_new[33] = "";
+		char pbox_i[33] = "";
+
+		getPBox(pbox_i, p_i, pbox);
+		xor(xl_new, xl, pbox_i);
+		strcpy(xl, xl_new);
+		p_i--;
+
+		// get required sub-boxes
+		char abin[9] = "";
+		char bbin[9] = "";
+		char cbin[9] = "";
+		char dbin[9] = "";
+		for(int j = 0; j < 32; j++){
+			if(0 <= j && j < 8){
+				// a
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(abin, digit);
+			}
+			else if(8 <= j && j < 16){
+				// b
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(bbin, digit);
+			}
+			else if(16 <= j && j < 24){
+				// c
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(cbin, digit);
+			}
+			else{
+				// d
+				char digit[2] = "";
+				sprintf(digit, "%c", xl[j]);
+				strcat(dbin, digit);
+			}
+		}
+		int aind = binaryToInt(abin);
+		int bind = binaryToInt(bbin);
+		int cind = binaryToInt(cbin);
+		int dind = binaryToInt(dbin);
+		
+		char sbox0a[33] = "";
+		char sbox1b[33] = "";
+		char sbox2c[33] = "";
+		char sbox3d[33] = "";
+		getSBox(sbox0a, 0, aind, sboxes);
+		getSBox(sbox1b, 1, bind, sboxes);
+		getSBox(sbox2c, 2, cind, sboxes);
+		getSBox(sbox3d, 3, dind, sboxes);
+
+		//printf("(0, %i):  %s\n", aind, sbox0a);
+		//printf("(1, %i):  %s\n", bind, sbox1b);
+		//printf("(2, %i):  %s\n", cind, sbox2c);
+		//printf("(3, %i):  %s\n", dind, sbox3d);
+
+		char f_xl[33] = "";
+		blowfishFunction(f_xl, sbox0a, sbox1b, sbox2c, sbox3d);
+		//printf("%s\n", f_xl);
+		char fxl_xor_xr[33] = "";
+		xor(fxl_xor_xr, f_xl, xr);
+		strcpy(xr, fxl_xor_xr);
+
+		// swap xl & xr
+		//printf("\nbefore\n");
+		//printf("xl: %s\n", xl);
+		//printf("xr: %s\n", xr);
+		char temp[33] = "";
+		strcpy(temp, xl);
+		strcpy(xl, xr);
+		strcpy(xr, temp);
+		//printf("after\n");
+		//printf("xl: %s\n", xl);
+		//printf("xr: %s\n", xr);
+	}
+
+	// undo last swap
+	char temp[33] = "";
+	strcpy(temp, xl);
+	strcpy(xl, xr);
+	strcpy(xr, temp);
+
+	char pbox_1[33] = "";
+	char pbox_0[33] = "";
+	getPBox(pbox_1, 1, pbox);
+	getPBox(pbox_0, 0, pbox);
+
+	char new_xr[33] = "";
+	char new_xl[33] = "";
+	xor(new_xr, xr, pbox_1);
+	xor(new_xl, xl, pbox_0);
+	strcpy(xr, new_xr);
+	strcpy(xl, new_xl);
+
+	// recombine xl & xr
+	char encx[65] = "";
+	strcat(encx, xl);
+	strcat(encx, xr);
+
+	strcpy(destination, encx);
 }
 
 void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
