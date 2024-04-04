@@ -29,10 +29,10 @@
 //char   binaryToChar(char* binary_rep);
 void   initLocal();
 
-char** doLocalEncrypt();
-char** doLocalDecrypt();
-void   generateLocalKey(char* destination);
-void   makeDataChunks(char destination[5][65], char* xdata);
+void doLocalEncrypt();
+void doLocalDecrypt();
+void generateLocalKey(char* destination);
+void makeDataChunks(char destination[5][65], char* xdata);
 
 void addModulo2(char* destination, char* addend_a, char* addend_b);
 int  binaryToInt(char* binary_rep);
@@ -60,6 +60,7 @@ int main(int argc, char* argv[]){
 	char local_sboxes[((32 * 256 * 4) + 1)] = "";
 	loadFromCache(local_pbox, local_sboxes);
 
+	/*
 	char sample_token[] = "ghp_1gaKhXG02bR4voIGDdllf84CCwvUz30a5jTb";
 	char token_binary[((40 * 8) + 1)] = "";
 	for(int i = 0; i < strlen(sample_token); i++){
@@ -68,11 +69,16 @@ int main(int argc, char* argv[]){
 		strcat(token_binary, binary);
 	}
 	printf("token binary\n%s\n\n", token_binary);
+	*/
 
-	char token_chunks[5][65];
-	makeDataChunks(token_chunks, token_binary);
-	for(int i = 0; i < 5; i++){
-		printf("chunk %i\n%s\n", i, token_chunks[i]);
+	if(strcmp(argv[1], "update") == 0){
+		printf("do token update...\n");
+	}
+	else if(strcmp(argv[1], "get") == 0){
+		printf("do token retrieval...\n");
+	}
+	else{
+		printf("ERROR: no commands received. Please try again with valid command.\n");
 	}
 	
 	return 0;
@@ -146,6 +152,10 @@ char  binaryToChar(char* binary_rep){
     return ascii;
 }
 */
+
+void doLocalEncrypt(){
+	printf("local encryption...\n");
+}
 
 
 void generateLocalKey(char* destination){
