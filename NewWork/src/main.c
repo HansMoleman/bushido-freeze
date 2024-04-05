@@ -68,16 +68,9 @@ int main(int argc, char* argv[]){
 	char local_sboxes[((32 * 256 * 4) + 1)] = "";
 	loadFromCache(local_pbox, local_sboxes);
 
-	/*
-	char sample_token[] = "ghp_1gaKhXG02bR4voIGDdllf84CCwvUz30a5jTb";
-	char token_binary[((40 * 8) + 1)] = "";
-	for(int i = 0; i < strlen(sample_token); i++){
-		char binary[9] = "";
-		charToBinary(binary, sample_token[i]);
-		strcat(token_binary, binary);
-	}
-	printf("token binary\n%s\n\n", token_binary);
-	*/
+	
+	//char sample_token[] = "ghp_1gaKhXG02bR4voIGDdllf84CCwvUz30a5jTb";
+	
 
 	if(argc < 2){
 		printf("ERROR: insufficient arguments.\n");
@@ -128,6 +121,59 @@ int main(int argc, char* argv[]){
 			char token_value[41] = "";
 			binaryToToken(token_value, decr_data);
 			printf("%s\n", token_value);
+		}
+		else if(strcmp(argv[1], "export") == 0){
+			char user_key[57] = "";
+			printf("Enter the password to use as the key for exported data.\n");
+			printf("Max key length is 56 characters, minimum length is 8 characters.\n");
+			printf("You may use letters, numbers, and symbols.\n");
+			printf("\npassword: ");
+			scanf("%s", user_key);
+
+			char encr_chunks[5][65];
+			char encr_data[((40 * 8) + 1)] = "";
+			char decr_data[((40 * 8) + 1)] = "";
+			
+			loadDataCache(encr_data);
+			makeDataChunks(encr_chunks, encr_data);
+
+			for(int i = 0; i < 5; i++){
+				char decr_chunk[65] = "";
+				blowfishBackwards(decr_chunk, local_pbox, local_sboxes, encr_chunks[i]);
+				strcat(decr_data, decr_chunk);
+			}
+
+			char pbox[((32 * 18) + 1)] = "";
+			char sboxes[((32 * 256 * 4) + 1)] = "";
+			loadPBoxBin(pbox);
+			loadSBoxBin(sboxes);
+			makePBoxes(pbox, user_key);
+			preparePSBoxes(pbox, sboxes, pbox, sboxes);
+
+			char data_chunks[5][65];
+			char expt_data[((40 * 8) + 1)] = "";
+			makeDataChunks(data_chunks, decr_data);
+
+			for(int i = 0; i < 5; i ++){
+				char encr_chunk[65] = "";
+				blowfishForwards(encr_chunk, pbox, sboxes, data_chunks[i]);
+				strcat(expt_data, encr_chunk);
+			}
+
+			char filename[] = "token.export.bin";
+			FILE* fptr = fopen(filename, "w");
+			if(fptr == NULL){
+				printf("ERROR: export file could not be created and/or accessed.\n");
+			}
+			else{
+				fprintf(fptr, "%s", expt_data);
+				fclose(fptr);
+			}
+
+			printf("Export complete, see file '%s'\n", filename);
+		}
+		else if(strcmp(argv[1], "import") == 0){
+			// do import
 		}
 		else{
 			printf("ERROR: command received is not recognized. Please try again with valid command.\n");
