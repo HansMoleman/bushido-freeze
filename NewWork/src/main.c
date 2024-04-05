@@ -33,6 +33,8 @@ void   initLocal();
 void binaryToToken(char* destination, char* token_binary);
 void doLocalEncrypt();
 void doLocalDecrypt();
+void doTokenExport();
+void doTokenImport();
 void generateLocalKey(char* destination);
 void loadDataCache(char* destination);
 void makeDataChunks(char destination[5][65], char* xdata);
