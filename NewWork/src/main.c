@@ -34,7 +34,9 @@ void binaryToToken(char* destination, char* token_binary);
 void doLocalEncrypt();
 void doLocalDecrypt();
 void generateLocalKey(char* destination);
+void loadDataCache(char* destination);
 void makeDataChunks(char destination[5][65], char* xdata);
+void saveDataCache();
 void tokenToBinary(char* destination, char* token_characters);
 
 void addModulo2(char* destination, char* addend_a, char* addend_b);
@@ -103,29 +105,13 @@ int main(int argc, char* argv[]){
 					strcat(encrypted_data, encrypted_chunk);
 				}
 
-				FILE* fptr = fopen(LOCALDATA, "w");
-				if(fptr == NULL){
-					printf("ERROR: could not access local data file.\n");
-				}
-				else{
-					fprintf(fptr, "%s", encrypted_data);
-					fclose(fptr);
-				}
-
+				saveDataCache(encrypted_data);
 				printf("token successfully updated.\n");
 			}
 		}
 		else if(strcmp(argv[1], "get") == 0){
 			char local_data[((64 * 5) + 1)] = "";
-			FILE* fptr = fopen(LOCALDATA, "r");
-
-			if(fptr == NULL){
-				printf("ERROR: cannot access local-data file.\n");
-			}
-			else{
-				fscanf(fptr, "%s", local_data);
-				fclose(fptr);
-			}
+			loadDataCache(local_data);
 
 			char encr_chunks[5][65];
 			char decr_data[((64 * 5) + 1)] = "";
@@ -321,6 +307,22 @@ void initLocal(){
 }
 
 
+void loadDataCache(char* destination){
+	char local_data[((64 * 5) + 1)] = "";
+	FILE* fptr = fopen(LOCALDATA, "r");
+
+	if(fptr == NULL){
+		printf("ERROR: cannot access local-data file.\n");
+	}
+	else{
+		fscanf(fptr, "%s", local_data);
+		fclose(fptr);
+	}
+
+	strcpy(destination, local_data);
+}
+
+
 void makeDataChunks(char destination[5][65], char* xdata){
 	char chunk_array[5][65];
 	char chunk_string[65] = "";
@@ -345,6 +347,20 @@ void makeDataChunks(char destination[5][65], char* xdata){
 		strcpy(destination[i], chunk_array[i]);
 	}
 }
+
+
+void saveDataCache(char* data_to_write){
+	FILE* fptr = fopen(LOCALDATA, "w");
+	
+	if(fptr == NULL){
+		printf("ERROR: could not access local data file.\n");
+	}
+	else{
+		fprintf(fptr, "%s", data_to_write);
+		fclose(fptr);
+	}
+}
+
 
 void tokenToBinary(char* destination, char* token_characters){
 	char token_binary[((40 * 8) + 1)] = "";
