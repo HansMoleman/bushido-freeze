@@ -26,9 +26,6 @@
 #define LOCALDATA  "local-data.bin"
 
 
-//void   charToBinary(char* destination, char a_char);
-//char   binaryToChar(char* binary_rep);
-void   initLocal();
 
 void binaryToToken(char* destination, char* token_binary);
 void doLocalEncrypt();
@@ -36,6 +33,7 @@ void doLocalDecrypt();
 void doTokenExport();
 void doTokenImport();
 void generateLocalKey(char* destination);
+void initLocal();
 void loadDataCache(char* destination);
 void makeDataChunks(char destination[5][65], char* xdata);
 void saveDataCache();
@@ -350,9 +348,6 @@ void initLocal(){
 		preparePSBoxes(pbox, sboxes, pbox, sboxes);
 
 		updateLocalCache(pbox, sboxes);
-	}
-	else {
-		printf("local cache already exists.\n");
 	}
 }
 
