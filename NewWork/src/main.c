@@ -173,7 +173,60 @@ int main(int argc, char* argv[]){
 			printf("Export complete, see file '%s'\n", filename);
 		}
 		else if(strcmp(argv[1], "import") == 0){
-			// do import
+			char filepath[] = "token.export.bin";
+			char encr_data[((40 * 8) + 1)] = "";
+
+			FILE* fptr = fopen(filepath, "r");
+			if(fptr == NULL){
+				printf("ERROR: export file cannot be accessed!\n");
+			}
+			else{
+				fscanf(fptr, "%s", encr_data);
+				fclose(fptr);
+			}
+
+			if(strcmp(encr_data, "") != 0){
+				// collect key from user
+				char user_key[57] = "";
+				printf("Enter the password that was used as the key during the export process.\n");
+				printf("If you do not remember this password, you will not be able to continue.\n");
+				printf("\npassword: ");
+				scanf("%s", user_key);
+
+				// set up p/s-boxes with user inputted key
+				char pbox[((32 * 18) + 1)] = "";
+				char sboxes[((32 * 256 * 4) + 1)] = "";
+				loadPBoxBin(pbox);
+				loadSBoxBin(sboxes);
+				makePBoxes(pbox, user_key);
+				preparePSBoxes(pbox, sboxes, pbox, sboxes);
+
+				// do decryption process on encrypted data chunks
+				char encr_chunks[5][65];
+				char decr_data[((40 * 8) + 1)] = "";
+				makeDataChunks(encr_chunks, encr_data);
+
+				for(int i = 0; i < 5; i++){
+					char decr_chunk[65] = "";
+					blowfishBackwards(decr_chunk, pbox, sboxes, encr_chunks[i]);
+					strcat(decr_data, decr_chunk);
+				}
+
+				// encrypt decrypted data using local p/s-box cache
+				char decr_chunks[5][65];
+				char encr_local[((40 * 8) + 1)] = "";
+				makeDataChunks(decr_chunks, decr_data);
+
+				for(int i = 0; i < 5; i++){
+					char encr_chunk[65] = "";
+					blowfishForwards(encr_chunk, local_pbox, local_sboxes, decr_chunks[i]);
+					strcat(encr_local, encr_chunk);
+				}
+
+				// overwrite existing data cache with encrypted data
+				saveDataCache(encr_local);
+				printf("Token successfully imported.\n");
+			}
 		}
 		else{
 			printf("ERROR: command received is not recognized. Please try again with valid command.\n");
