@@ -237,74 +237,8 @@ int main(int argc, char* argv[]){
 }
 
 
-/*
-void charToBinary(char* destination, char a_char){
-	char binary_rep[9] = "";
-    int remainders[8];
-    int quotient = a_char;
-    int remainder = 0;
-    int count = 0;
 
-    while(quotient > 0){
-        remainder = quotient % 2;
-        quotient = quotient / 2;
-        remainders[count] = remainder;
-        count++;
-    }
-
-    for(int i = (count - 1); 0 <= i; i--){
-        char digit[2] = "";
-        sprintf(digit, "%d", remainders[i]);
-        strcat(binary_rep, digit);
-    }
-    //printf("bin_rep: %s\n", binary_rep);
-
-    int binstr_len = 0;
-    char target = binary_rep[binstr_len];
-    while(target != '\0'){
-        binstr_len++;
-        target = binary_rep[binstr_len];
-    }
-
-    //printf("%i\n", binstr_len);
-    while(binstr_len < 8){
-        char tempstr[9];
-        tempstr[0] = '0';
-        strcat(tempstr, binary_rep);
-        strcpy(binary_rep, tempstr);
-        binstr_len++;
-    }
-
-
-    int binstr_len = strlen(binary_rep);
-    while(binstr_len < 8){
-    	char tempstr[9] = "0";
-    	strcat(tempstr, binary_rep);
-    	strcpy(binary_rep, tempstr);
-    	binstr_len = strlen(binary_rep);
-    }
-
-    //printf("pre-copy\n");
-    strcpy(destination, binary_rep);
-    //printf("post-copy\n");
-}
-*/
-
-/*
-char  binaryToChar(char* binary_rep){
-	int power = 0;
-    int sum = 0;
-    for(int i = 7; 0 <= i; i--){
-        int base = binary_rep[i] - '0';
-        sum += (base * (1 << power));
-        power++;
-    }
-
-    char ascii = sum;
-    return ascii;
-}
-*/
-
+// METHODS NATIVE TO THIS FILE
 
 void binaryToToken(char* destination, char* token_binary){
 	char token_value[41] = "";
@@ -331,8 +265,23 @@ void binaryToToken(char* destination, char* token_binary){
 }
 
 
+void doLocalDecrypt(){
+	printf("local decryption...\n");
+}
+
+
 void doLocalEncrypt(){
 	printf("local encryption...\n");
+}
+
+
+void doTokenExport(){
+	printf("token export...\n");
+}
+
+
+void doTokenImport(){
+	printf("token import...\n");
 }
 
 
@@ -476,25 +425,8 @@ void tokenToBinary(char* destination, char* token_characters){
 }
 
 
-/*
 
-##### Main Success Scenario
-
-1. User prompts system to update the stored token value.
-2. System requests new token value from the user.
-3. User enters the new token value and submits it to the system. [Exc-1: submission is an unexpected length]
-4. System loads key data stored in local storage.
-5. System uses key data to encrypt the new token data.
-6. System writes new encrypted token data to local storage, overwriting (any) previous token data.
-7. System confirms operation has completed successfully and then exits.
-
-*/
-
-/*
-char** doLocalEncrypt() {
-}
-*/
-
+// METHODS FROM 'subkey.c' FILE
 
 void addModulo2(char* destination, char* addend_a, char* addend_b){
 	char result[33] = "";
@@ -504,7 +436,6 @@ void addModulo2(char* destination, char* addend_a, char* addend_b){
 	for(int i = 31; 0 <= i; i--){
 		char state[4] = "";
 		sprintf(state, "%c%c%c", addend_a[i], addend_b[i], carry);
-		//printf("%s", state);
 
 		if(strcmp(state, "000") == 0){
 			digit = '0';
@@ -538,7 +469,6 @@ void addModulo2(char* destination, char* addend_a, char* addend_b){
 		else{
 			printf("--error--");
 		}
-		//printf("%c\n", digit); 
 
 		result[i] = digit;
 	}
@@ -576,8 +506,6 @@ void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata)
 		}
 	}
 
-	//printf("xl: %s\n", xl);
-	//printf("xr: %s\n", xr);
 	int p_i = 17;
 	for(int i = 0; i < 16; i++){
 		char xl_new[33] = "";
@@ -633,29 +561,17 @@ void blowfishBackwards(char* destination, char* pbox, char* sboxes, char* xdata)
 		getSBox(sbox2c, 2, cind, sboxes);
 		getSBox(sbox3d, 3, dind, sboxes);
 
-		//printf("(0, %i):  %s\n", aind, sbox0a);
-		//printf("(1, %i):  %s\n", bind, sbox1b);
-		//printf("(2, %i):  %s\n", cind, sbox2c);
-		//printf("(3, %i):  %s\n", dind, sbox3d);
-
 		char f_xl[33] = "";
 		blowfishFunction(f_xl, sbox0a, sbox1b, sbox2c, sbox3d);
-		//printf("%s\n", f_xl);
 		char fxl_xor_xr[33] = "";
 		xor(fxl_xor_xr, f_xl, xr);
 		strcpy(xr, fxl_xor_xr);
 
 		// swap xl & xr
-		//printf("\nbefore\n");
-		//printf("xl: %s\n", xl);
-		//printf("xr: %s\n", xr);
 		char temp[33] = "";
 		strcpy(temp, xl);
 		strcpy(xl, xr);
 		strcpy(xr, temp);
-		//printf("after\n");
-		//printf("xl: %s\n", xl);
-		//printf("xr: %s\n", xr);
 	}
 
 	// undo last swap
@@ -701,8 +617,6 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 		}
 	}
 
-	//printf("xl: %s\n", xl);
-	//printf("xr: %s\n", xr);
 	for(int i = 0; i < 16; i++){
 		char xl_new[33] = "";
 		char pbox_i[33] = "";
@@ -756,29 +670,17 @@ void blowfishForwards(char* destination, char* pbox, char* sboxes, char* xdata){
 		getSBox(sbox2c, 2, cind, sboxes);
 		getSBox(sbox3d, 3, dind, sboxes);
 
-		//printf("(0, %i):  %s\n", aind, sbox0a);
-		//printf("(1, %i):  %s\n", bind, sbox1b);
-		//printf("(2, %i):  %s\n", cind, sbox2c);
-		//printf("(3, %i):  %s\n", dind, sbox3d);
-
 		char f_xl[33] = "";
 		blowfishFunction(f_xl, sbox0a, sbox1b, sbox2c, sbox3d);
-		//printf("%s\n", f_xl);
 		char fxl_xor_xr[33] = "";
 		xor(fxl_xor_xr, f_xl, xr);
 		strcpy(xr, fxl_xor_xr);
 
 		// swap xl & xr
-		//printf("\nbefore\n");
-		//printf("xl: %s\n", xl);
-		//printf("xr: %s\n", xr);
 		char temp[33] = "";
 		strcpy(temp, xl);
 		strcpy(xl, xr);
 		strcpy(xr, temp);
-		//printf("after\n");
-		//printf("xl: %s\n", xl);
-		//printf("xr: %s\n", xr);
 	}
 
 	// undo last swap
@@ -868,7 +770,6 @@ void getPBox(char* destination, int index, char* pbox){
 		strcat(pbox_i, digit);
 	}
 
-	//printf("pbox-%i: %s\n", index, pbox_i);
 	strcpy(destination, pbox_i);
 }
 
@@ -1002,7 +903,6 @@ void makeKeyChunks(char destination[14][33], char* key){
 	for(int i = 0; i < key_length; i++){
 		char digit = key[i];
 		key_chunks[chunk_counter][digit_counter] = digit;
-		//printf("chunk: %i, digit: %i, value: %c\n", chunk_counter, digit_counter, digit);
 
 		if(digit_counter == 31){
 			key_chunks[chunk_counter][(digit_counter + 1)] = '\0';
@@ -1015,7 +915,6 @@ void makeKeyChunks(char destination[14][33], char* key){
 	}
 
 	for(int i = 0; i < 14; i++){
-		//printf("%i:  %s\n", i, key_chunks[i]);
 		strcpy(destination[i], key_chunks[i]);
 	}
 }
@@ -1044,7 +943,6 @@ void makePBoxes(char* destination, char* key){
 		char pbox_xor_chunk[33] = "";
 		xor(pbox_xor_chunk, pbox_i, chunk);
 		strcat(new_pboxes, pbox_xor_chunk);
-		//printf("Pi: %s\nKi: %s\nPk: %s\n", pbox_i, chunk, pbox_xor_chunk);
 	}
 
 	strcpy(destination, new_pboxes);
@@ -1061,7 +959,6 @@ void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
 	char sbox_new[((32 * 256 * 4) + 1)] = "";
 	strcpy(pbox_new, pbox);
 	strcpy(sbox_new, sboxes);
-	//printf("before\n%s\n", pbox_new);
 
 	char x_encr[65] = "";
 	blowfishForwards(x_encr, pbox_new, sbox_new, zero_string);
@@ -1080,10 +977,8 @@ void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
 		strcpy(new_xencr, x_encr);
 		blowfishForwards(x_encr, pbox_new, sbox_new, new_xencr);
 	}
-	//printf("after\n%s\n", pbox_new);
 
 	// do s-boxes
-	//printf("sbox-before\n%s\n", sbox_new);
 	for(int i = 0; i < 4; i++){
 		for(int j = 0; j < (256 / 2); j++){
 			int start_j = (i * 256) + (j * 64);
@@ -1099,7 +994,6 @@ void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
 			blowfishForwards(x_encr, pbox_new, sbox_new, new_xencr);
 		}
 	}
-	//printf("sbox-after\n%s\n", sbox_new);
 
 	strcpy(pbox_dest, pbox_new);
 	strcpy(sbox_dest, sbox_new);
@@ -1107,8 +1001,6 @@ void preparePSBoxes(char* pbox_dest, char* sbox_dest, char* pbox, char* sboxes){
 
 void updateLocalCache(char* pbox, char* sboxes){
 	// write pbox chunk, then sboxes chunk, to file
-	//int pbox_size = (32 * 18);
-	//int sbox_size = (32 * 256 * 4);
 	char str_out[((32 * 18) + (32 * 256 * 4) + 1)] = "";
 	FILE* fptr;
 
