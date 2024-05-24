@@ -24,6 +24,7 @@
 
 #define LOCALCACHE "local-cache.bin"
 #define LOCALDATA  "local-data.bin"
+#define LOCALHOME  ""
 
 
 
@@ -158,7 +159,10 @@ int main(int argc, char* argv[]){
 				strcat(expt_data, encr_chunk);
 			}
 
-			char filename[] = "token.export.bin";
+			char filename[512] = "";
+			strcat(filename, LOCALHOME);
+			strcat(filename, "export/token.export.bin");
+			strcat(filename, "");
 			FILE* fptr = fopen(filename, "w");
 			if(fptr == NULL){
 				printf("ERROR: export file could not be created and/or accessed.\n");
@@ -171,8 +175,12 @@ int main(int argc, char* argv[]){
 			printf("Export complete, see file '%s'\n", filename);
 		}
 		else if(strcmp(argv[1], "import") == 0){
-			char filepath[] = "token.export.bin";
+			char filepath[512] = "";
 			char encr_data[((40 * 8) + 1)] = "";
+
+			strcat(filepath, LOCALHOME);
+			strcat(filepath, "import/token.export.bin");
+			strcat(filepath, "");
 
 			FILE* fptr = fopen(filepath, "r");
 			if(fptr == NULL){
@@ -336,8 +344,12 @@ void generateLocalKey(char* destination){
 
 
 void initLocal(){
+	char local_cache_path[512] = "";
+	strcat(local_cache_path, LOCALHOME);
+	strcat(local_cache_path, LOCALCACHE);
+	strcat(local_cache_path, "");
 
-	if(!(access(LOCALCACHE, F_OK) == 0)){
+	if(!(access(local_cache_path, F_OK) == 0)){
 		char local_key[((32 * 8) + 1)] = "";
 		char sboxes[((32 * 256 * 4) + 1)] = "";
 		char pbox[((18 * 32) + 1)] = "";
@@ -354,7 +366,12 @@ void initLocal(){
 
 void loadDataCache(char* destination){
 	char local_data[((64 * 5) + 1)] = "";
-	FILE* fptr = fopen(LOCALDATA, "r");
+	char local_data_path[512] = "";
+
+	strcat(local_data_path, LOCALHOME);
+	strcat(local_data_path, LOCALDATA);
+	strcat(local_data_path, "");
+	FILE* fptr = fopen(local_data_path, "r");
 
 	if(fptr == NULL){
 		printf("ERROR: cannot access local-data file.\n");
@@ -395,7 +412,11 @@ void makeDataChunks(char destination[5][65], char* xdata){
 
 
 void saveDataCache(char* data_to_write){
-	FILE* fptr = fopen(LOCALDATA, "w");
+	char local_data_path[512] = "";
+	strcat(local_data_path, LOCALHOME);
+	strcat(local_data_path, LOCALDATA);
+	strcat(local_data_path, "");
+	FILE* fptr = fopen(local_data_path, "w");
 	
 	if(fptr == NULL){
 		printf("ERROR: could not access local data file.\n");
@@ -788,7 +809,12 @@ void loadFromCache(char* pbox_dest, char* sboxes_dest){
 	char str_in[((32 * 18) + (32 * 256 * 4) + 1)] = "";
 	FILE* fptr;
 
-	fptr = fopen(LOCALCACHE, "r");
+	char local_cache_path[512] = "";
+	strcat(local_cache_path, LOCALHOME);
+	strcat(local_cache_path, LOCALCACHE);
+	strcat(local_cache_path, "");
+
+	fptr = fopen(local_cache_path, "r");
 	if(fptr == NULL){
 		printf("ERROR: local-cache file not found!\n");
 	}
@@ -819,16 +845,32 @@ void loadFromCache(char* pbox_dest, char* sboxes_dest){
 }
 
 void loadSBoxBin(char* destination){
-	char sbox1path[] = "Pi/bin/sbox1.bin";
-	char sbox2path[] = "Pi/bin/sbox2.bin";
-	char sbox3path[] = "Pi/bin/sbox3.bin";
-	char sbox4path[] = "Pi/bin/sbox4.bin";
+	char sbox1path[512] = "";
+	char sbox2path[512] = "";
+	char sbox3path[512] = "";
+	char sbox4path[512] = "";
 	char sbox1vals[((32 * 256) + 1)] = "";
 	char sbox2vals[((32 * 256) + 1)] = "";
 	char sbox3vals[((32 * 256) + 1)] = "";
 	char sbox4vals[((32 * 256) + 1)] = "";
 	char sboxes[((32 * 256 * 4) + 1)] = "";
 	FILE* fptr;
+
+	strcat(sbox1path, LOCALHOME);
+	strcat(sbox1path, "Pi/bin/sbox1.bin");
+	strcat(sbox1path, "");
+
+	strcat(sbox2path, LOCALHOME);
+	strcat(sbox2path, "Pi/bin/sbox2.bin");
+	strcat(sbox2path, "");
+
+	strcat(sbox3path, LOCALHOME);
+	strcat(sbox3path, "Pi/bin/sbox3.bin");
+	strcat(sbox3path, "");
+
+	strcat(sbox4path, LOCALHOME);
+	strcat(sbox4path, "Pi/bin/sbox4.bin");
+	strcat(sbox4path, "");
 
 	if((fptr = fopen(sbox1path, "r")) == NULL){
 		printf("ERROR");
@@ -870,8 +912,12 @@ void loadSBoxBin(char* destination){
 }
 
 void loadPBoxBin(char* destination){
-	char filepath[] = "Pi/bin/pbox.bin";
+	char filepath[512] = "";
 	char pvalues[((18 * 32) + 1)] = "";
+
+	strcat(filepath, LOCALHOME);
+	strcat(filepath, "Pi/bin/pbox.bin");
+	strcat(filepath, "");
 
 	FILE* fptr = fopen(filepath, "r");
 
@@ -1002,7 +1048,12 @@ void updateLocalCache(char* pbox, char* sboxes){
 	strcpy(str_out, pbox);
 	strcat(str_out, sboxes);
 
-	fptr = fopen(LOCALCACHE, "w");
+	char local_cache_path[512] = "";
+	strcat(local_cache_path, LOCALHOME);
+	strcat(local_cache_path, LOCALCACHE);
+	strcat(local_cache_path, "");
+
+	fptr = fopen(local_cache_path, "w");
 
 	if(fptr == NULL){
 		printf("ERROR: local-cache file not found!\n");
